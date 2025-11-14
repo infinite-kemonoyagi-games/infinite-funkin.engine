@@ -2,3 +2,4 @@ export/**
 builds/**
 
 .haxelib/**
+.DS_Store
