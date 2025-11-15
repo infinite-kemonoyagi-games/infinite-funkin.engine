@@ -28,6 +28,11 @@ class PlayState extends MusicBeatState
 		startCountdown();
 	}
 
+	public override function update(elapsed:Float):Void
+	{
+		super.update(elapsed);
+	}
+
 	private function startCountdown():Void
 	{
 		conductor.onBeatUpdate.add(function count(beats:Int):Void
@@ -72,13 +77,6 @@ class PlayState extends MusicBeatState
 		vocalP1.play();
 		vocalP2.play();
 		resyncVocals();
-	}
-
-	public override function update(elapsed:Float):Void
-	{
-		super.update(elapsed);
-		
-		conductor.update(elapsed);
 	}
 
 	function resyncVocals():Void

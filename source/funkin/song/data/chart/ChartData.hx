@@ -1,5 +1,8 @@
 package funkin.song.data.chart;
 
+import funkin.song.data.chart.ChartEventData;
+import funkin.song.data.chart.ChartNoteData;
+
 typedef ChartData = 
 {
     var characters:Array<ChartCharacter>;
@@ -7,6 +10,13 @@ typedef ChartData =
     var stages:Array<String>;
 
     var allowedVocals:Map<String, Bool>;
+    var allowedScore:Bool;
+
+    var current:ChartCurrentData;
+
+    var speed:Float;
+    var notes:Array<ChartNoteData>;
+    var events:Array<ChartEventData>;
 }
 
 typedef ChartCurrentData = 

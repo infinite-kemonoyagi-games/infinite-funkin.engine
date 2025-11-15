@@ -14,8 +14,8 @@ typedef ChartNoteData =
     var data:String;
     var skin:String;
 
-    var speed:Float;
-    var speedMode:NoteSpeedMode;
+    var ?speed:Null<Float>;
+    var ?speedMode:Null<NoteSpeedMode>;
 }
 
 enum abstract SustainAnimation(String) from String to String
