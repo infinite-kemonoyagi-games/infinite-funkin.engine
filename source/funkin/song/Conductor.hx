@@ -51,6 +51,8 @@ class Conductor
 
     public var offset:Float = 0.0;
 
+    public var playing(default, null):Bool = false;
+
     public function new(tempo:Float = 100.00, signature:Null<TimeSignature> = null)
     {
         if (signature == null) signature = Conductor.DEFAULT_SIGNATURE;
@@ -62,11 +64,17 @@ class Conductor
         onSectionUpdate = new FlxTypedSignal();
 
         reset();
-        signature.onChange.add(_ -> updateChanges);
+        
+        signature.onChange.add(_ -> 
+        {
+            if (playing) updateChanges();
+        });
     }
 
     public function update(elapsed:Float):Void
     {
+        if (!playing) return;
+
         if (reference == null && initialData != null)
             _position += initialData.position + (elapsed * 1000);
 
@@ -96,12 +104,42 @@ class Conductor
         }
     }
 
+    public function play():Void
+    {
+        playing = true;
+    }
+
     public function reset():Void
     {
         tempo = initialData.tempo;
         signature = initialData.signature;
 
         lastChange = null;
+    }
+
+    public function stop(alsoDestroy:Bool = false):Void
+    {
+        playing = false;
+        if (alsoDestroy) destroy();
+    }
+
+    public function destroy():Void
+    {
+        initialData = null;
+        lastChange = null;
+        tempo = 0;
+        signature = null;
+        stepsPerBeat = 0;
+        steps = 0;
+        beats = 0;
+        sections = 0;
+        onStepUpdate = null;
+        onBeatUpdate = null;
+        onSectionUpdate = null;
+        reference = null;
+        _position = 0;
+        offset = 0;
+        playing = false;
     }
 
     private function updateChanges():Void
@@ -126,7 +164,7 @@ class Conductor
     private function set_tempo(newValue:Float):Float
     {
         tempo = FlxMath.roundDecimal(newValue, 2);
-        updateChanges();
+        if (playing) updateChanges();
         return tempo;
     }
 
@@ -141,8 +179,7 @@ class Conductor
     {
         _position = newValue;
         if (reference != null) reference.time = _position;
-
-        updateChanges();
+        if (playing) updateChanges();
         return _position;
     }
 
@@ -155,6 +192,7 @@ class Conductor
     @:noCompletion
     private function get_stepCrochet():Float
     {
+        if (signature == null) return 0;
         return beatCrochet / signature.numerator;
     }
 }
