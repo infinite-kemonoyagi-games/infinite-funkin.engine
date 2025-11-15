@@ -9,7 +9,8 @@ typedef ChartData =
     var skins:Array<ChartNoteSkins>;
     var stages:Array<String>;
 
-    var allowedVocals:Map<String, Bool>;
+    var ?allowedVocals:Map<String, Bool>;
+    var _allowedVocals:Dynamic;
     var allowedScore:Bool;
 
     var current:ChartCurrentData;

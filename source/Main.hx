@@ -1,5 +1,6 @@
 package;
 
+import flixel.FlxG;
 import flixel.FlxGame;
 import funkin.play.PlayState;
 import openfl.display.Sprite;
@@ -10,6 +11,8 @@ class Main extends Sprite
 	{
 		super();
 		
-		addChild(new FlxGame(0, 0, PlayState));
+		addChild(new FlxGame());
+
+		FlxG.switchState(() -> new PlayState("bopeebo", "normal"));
 	}
 }

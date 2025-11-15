@@ -2,28 +2,45 @@ package funkin.play;
 
 import flixel.FlxG;
 import flixel.sound.FlxSound;
-import flixel.sound.FlxSoundGroup;
 import funkin.backend.MusicBeatState;
 import funkin.song.Conductor;
+import funkin.song.TimeSignature;
+import funkin.song.data.SongMetaData;
+import funkin.song.data.chart.ChartData;
+import funkin.song.data.chart.ChartParser;
+import haxe.Json;
+import openfl.Assets;
 
 class PlayState extends MusicBeatState
 {
-	public var vocalP1:FlxSound = null;
-	public var vocalP2:FlxSound = null;
-	public var vocals:FlxSoundGroup = null;
+	public var level:String;
+	public var difficulty:String;
+	
+	public var vocals:Map<String, FlxSound> = null;
+	public var playerVocals:Map<String, FlxSound> = null;
 
 	public var generatedMusic:Bool = false;
+
+	private var songMeta:SongMetaData = null; // temporal... or maybe not
+	private var chartData:ChartData = null;
+
+	public function new(level:String, difficulty:String)
+	{
+		this.level = level;
+		this.difficulty = difficulty;
+
+		final URL:String = 'assets/data/charts/$level/';
+		songMeta = cast Json.parse(Assets.getText(URL + difficulty + '-meta.json'));
+		chartData = cast ChartParser.loadChart(URL, difficulty);
+
+		super();
+	}
 
 	public override function create():Void
 	{
 		super.create();
 
 		setupSong();
-
-		conductor = new Conductor(100);
-		conductor.position = -(conductor.beatCrochet * 5);
-		conductor.play();
-		addConductor();
 
 		startCountdown();
 	}
@@ -52,20 +69,29 @@ class PlayState extends MusicBeatState
 
 	private function setupSong():Void
 	{
-		vocals = new FlxSoundGroup();
+		vocals = [];
+		playerVocals = [];
 
 		FlxG.sound.music = new FlxSound();
-		FlxG.sound.music.loadEmbedded("assets/music/songs/bopeebo/Inst.ogg");
+		FlxG.sound.music.loadEmbedded('assets/music/songs/$level/Inst.ogg');
 
-		vocalP1 = new FlxSound();
-		vocalP1.loadEmbedded("assets/music/songs/bopeebo/Voices-bf.ogg");
-		FlxG.sound.list.add(vocalP1);
-		vocals.add(vocalP1);
+		for (character in chartData.characters)
+		{
+			if (!chartData.allowedVocals.get(character.name)) continue;
+			final vocal:FlxSound = new FlxSound();
+			vocal.loadEmbedded('assets/music/songs/$level/Voices-${character.name}.ogg');
+			FlxG.sound.list.add(vocal);
+			vocals.set(character.name, vocal);
+			if (character.type == player) playerVocals.set(character.name, vocal);
+		}
 
-		vocalP2 = new FlxSound();
-		vocalP2.loadEmbedded("assets/music/songs/bopeebo/Voices-dad.ogg");
-		FlxG.sound.list.add(vocalP2);
-		vocals.add(vocalP2);
+		final tempo = songMeta.tempo[0].data;
+		final signature = songMeta.signature[0].data;
+
+		conductor = new Conductor(tempo, new TimeSignature(signature[0], signature[1]));
+		conductor.position = -(conductor.beatCrochet * 5);
+		conductor.play();
+		addConductor();
 	}
 
 	private function startSong():Void
@@ -74,8 +100,7 @@ class PlayState extends MusicBeatState
 
 		conductor.reference = FlxG.sound.music;
 		FlxG.sound.music.play();
-		vocalP1.play();
-		vocalP2.play();
+		for (sound in vocals) sound.play();
 		resyncVocals();
 	}
 
@@ -87,12 +112,12 @@ class PlayState extends MusicBeatState
 		final timeToPlayAt:Float = conductor.position;
 
 		FlxG.sound.music.pause();
-		vocals.pause();
+		for (sound in vocals) sound.pause();
 
 		FlxG.sound.music.time = timeToPlayAt;
 		FlxG.sound.music.play(false, timeToPlayAt);
 
-		for (sound in vocals.sounds)
+		for (sound in vocals)
 		{
 			sound.time = timeToPlayAt;
 			sound.play(false, timeToPlayAt);	

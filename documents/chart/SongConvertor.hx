@@ -277,7 +277,7 @@ class SongConvertor
             speed: original.speed,
             current: original.current,
             allowedScore: original.validScore,
-            allowedVocals: [original.current.player => original.needsVoices, original.current.opponent => original.needsVoices],
+            _allowedVocals: [original.current.player => original.needsVoices, original.current.opponent => original.needsVoices],
             stages: [original.stage],
             skins: original.skins,
             events: [],
@@ -419,7 +419,8 @@ typedef ChartData =
     var skins:Array<ChartNoteSkins>;
     var stages:Array<String>;
 
-    var allowedVocals:Map<String, Bool>;
+    var ?allowedVocals:Map<String, Bool>;
+    var _allowedVocals:Dynamic;
     var allowedScore:Bool;
 
     var current:ChartCurrentData;
