@@ -49,6 +49,8 @@ class Conductor
     @:noCompletion
     private var _position(null, null):Float = 0.0;
 
+    public var offset:Float = 0.0;
+
     public function new(tempo:Float = 100.00, signature:Null<TimeSignature> = null)
     {
         if (signature == null) signature = Conductor.DEFAULT_SIGNATURE;
@@ -74,8 +76,12 @@ class Conductor
 
         final lastStep = steps;
 
-        if (lastChange == null) steps = Math.floor(position / stepCrochet);
-        else steps = Math.floor((position - lastChange.position) / stepCrochet) + lastChange.steps;
+        if (lastChange == null) steps = Math.floor((position + offset) / stepCrochet);
+        else
+        {
+            final curPosition:Float = (position - lastChange.position) / stepCrochet;
+            steps = Math.floor(curPosition + offset) + lastChange.steps;
+        }
         beats = Math.floor(steps / stepsPerBeat);
         sections = Math.floor(beats / signature.numerator);
 
