@@ -13,5 +13,5 @@ typedef AnimationFile =
     var looped:Bool;
     var flip:PointsObjectBoolean;
     var offsets:PointsObject;
-    var ?centerOffsets:Null<String>;
+    var ?centerOffsets:Null<Bool>;
 }
