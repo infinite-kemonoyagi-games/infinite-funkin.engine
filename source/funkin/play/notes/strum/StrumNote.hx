@@ -5,6 +5,7 @@ import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxTileFrames;
 import flixel.math.FlxPoint;
+import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.play.notes.data.NoteFile;
 
@@ -26,7 +27,7 @@ class StrumNote extends MusicBeatSprite
         name = data.note;
         for (anim in data.animations)
         {
-            final frame:FlxGraphic = FlxG.bitmap.add(urls[anim.path]);
+            final frame:FlxGraphicAsset = urls[anim.path];
             switch file.spriteType.id
             {
                 case "default":
