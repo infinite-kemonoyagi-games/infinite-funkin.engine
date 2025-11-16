@@ -13,7 +13,7 @@ class MusicBeatSprite extends FlxSprite
         animation = new MusicBeatAnimation(this);
     }
 
-    public function getComplexAnimation():MusicBeatAnimation
+    public function getComplexAnim():MusicBeatAnimation
         return cast(animation, MusicBeatAnimation);
 }
 
@@ -27,12 +27,13 @@ class MusicBeatAnimation extends FlxAnimationController
     {
         offsets = [];
         frames = [];
+        framesAnimation =[];
         super(sprite);
     }
 
-    public function createFrame(id:String, frame:FlxFramesCollection):Void
+    public function createFrame(id:String, frames:FlxFramesCollection):Void
     {
-        frames[id] = frame;
+        this.frames[id] = frames;
     }
 
     public function setAnimToFrame(animation:String, frameID:String):Void
@@ -42,6 +43,7 @@ class MusicBeatAnimation extends FlxAnimationController
 
     public function setOffsets(animation:String, x:Float, y:Float, ?centerOffsets:Bool = false):Void
     {
+        if (offsets[animation] == null) offsets[animation] = [];
         offsets[animation].push([new FlxPoint(x, y), centerOffsets]);
     }
 
@@ -53,12 +55,12 @@ class MusicBeatAnimation extends FlxAnimationController
         if (framesAnimation.exists(name))
         {
             oldFrame = _sprite.frames;
-            _sprite.frames = framesAnimation[name];
+            _sprite.setFrames(framesAnimation[name], true);
         }
 
         super.add(name, frames, framerate, looped, flipX, flipY);
 
-        _sprite.frames = oldFrame;
+        if (framesAnimation.exists(name) && oldFrame != null) _sprite.setFrames(oldFrame, true);
     }
 
     public override function addByPrefix(name:String, prefix:String, 
@@ -69,12 +71,12 @@ class MusicBeatAnimation extends FlxAnimationController
         if (framesAnimation.exists(name))
         {
             oldFrame = _sprite.frames;
-            _sprite.frames = framesAnimation[name];
+            _sprite.setFrames(framesAnimation[name], true);
         }
 
         super.addByPrefix(name, prefix, frameRate, looped, flipX, flipY);
 
-        _sprite.frames = oldFrame;
+        if (framesAnimation.exists(name) && oldFrame != null) _sprite.setFrames(oldFrame, true);
     }
 
     public override function addByIndices(Name:String, Prefix:String, 
@@ -86,18 +88,18 @@ class MusicBeatAnimation extends FlxAnimationController
         if (framesAnimation.exists(name))
         {
             oldFrame = _sprite.frames;
-            _sprite.frames = framesAnimation[name];
+            _sprite.setFrames(framesAnimation[name], true);
         }
 
         super.addByIndices(Name, Prefix, Indices, Postfix, FrameRate, Looped, FlipX, FlipY);
 
-        _sprite.frames = oldFrame;
+        if (framesAnimation.exists(name) && oldFrame != null) _sprite.setFrames(oldFrame, true);
     }
 
     public override function play(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void
     {
         if (framesAnimation.exists(animName))
-            _sprite.frames = framesAnimation[name];
+            _sprite.setFrames(framesAnimation[animName], true);
 
         super.play(animName, force, reversed, frame);
 

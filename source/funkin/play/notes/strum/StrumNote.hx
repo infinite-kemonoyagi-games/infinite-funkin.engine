@@ -1,7 +1,5 @@
 package funkin.play.notes.strum;
 
-import flixel.FlxG;
-import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.frames.FlxTileFrames;
 import flixel.math.FlxPoint;
@@ -31,33 +29,34 @@ class StrumNote extends MusicBeatSprite
             switch file.spriteType.id
             {
                 case "default":
-                    getComplexAnimation().createFrame(anim.path, 
-                        FlxTileFrames.fromGraphic(frame, FlxPoint.get(anim.size.x, anim.size.y)));
-                    getComplexAnimation().setAnimToFrame(anim.name, anim.path);
+                    final tex = FlxTileFrames.fromGraphic(frame, FlxPoint.get(anim.size.x, anim.size.y));
+                    getComplexAnim().createFrame(anim.path, tex);
+                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
 
-                    getComplexAnimation().add(anim.name, anim.frames, anim.framerate, anim.looped, 
+                    getComplexAnim().add(anim.name, anim.frames, anim.framerate, anim.looped, 
                         anim.flip.x, anim.flip.y);
-                    getComplexAnimation().setOffsets(anim.name, anim.offsets.x, 
+                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
                         anim.offsets.y, anim?.centerOffsets ?? false);
                 case "sparrow":
-                    getComplexAnimation().createFrame(anim.path, 
-                        FlxAtlasFrames.fromSparrow(frame + ".png", frame + ".xml"));
-                    getComplexAnimation().setAnimToFrame(anim.name, anim.path);
+                    final tex = FlxAtlasFrames.fromSparrow(frame + ".png", frame + ".xml");
+                    getComplexAnim().createFrame(anim.path, tex);
+                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
 
-                    if (anim.frames != null)
+                    if (anim.frames == null)
                     {
-                        getComplexAnimation().addByPrefix(anim.name, anim.prefix, 
+                        getComplexAnim().addByPrefix(anim.name, anim.prefix, 
                             anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
                     }
                     else
                     {
-                        getComplexAnimation().addByIndices(anim.name, anim.prefix, anim.frames, 
+                        getComplexAnim().addByIndices(anim.name, anim.prefix, anim.frames, 
                             "", anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
                     }
-                    getComplexAnimation().setOffsets(anim.name, anim.offsets.x, 
+                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
                         anim.offsets.y, anim?.centerOffsets ?? false);
             }
         }
         animation.play(animation.getNameList()[0]);
+        scale.set(file.size.x, file.size.y);
     }
 }
