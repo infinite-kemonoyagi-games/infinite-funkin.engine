@@ -1,6 +1,7 @@
 package funkin.play;
 
 import flixel.FlxG;
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.sound.FlxSound;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.data.NoteFile;
@@ -26,6 +27,10 @@ class PlayState extends MusicBeatState
 	private var songMeta:SongMetaData = null; // temporal... or maybe not
 	private var chartData:ChartData = null;
 
+	public var strumlineManager:FlxTypedSpriteGroup<StrumLine>;
+	public var playerStrum:StrumLine;
+	public var opponentStrum:StrumLine;
+
 	public function new(level:String, difficulty:String)
 	{
 		this.level = level;
@@ -44,10 +49,7 @@ class PlayState extends MusicBeatState
 
 		setupSong();
 
-		final URL:String = 'assets/data/note/';
-		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
-		var strumline:StrumLine = new StrumLine(4, strumFile, opponent);
-		add(strumline);
+		spawnStrumlines();
 
 		startCountdown();
 	}
@@ -55,6 +57,32 @@ class PlayState extends MusicBeatState
 	public override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+	}
+
+	private function spawnStrumlines():Void
+	{
+		final URL:String = 'assets/data/note/';
+		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
+
+		strumlineManager = new FlxTypedSpriteGroup();
+		add(strumlineManager);
+
+		opponentStrum = new StrumLine(4, strumFile, opponent);
+		opponentStrum.ID = 0;
+		opponentStrum.y = 50;
+		strumlineManager.add(opponentStrum);
+
+		playerStrum = new StrumLine(4, strumFile, player);
+		playerStrum.ID = 1;
+		playerStrum.y = 50;
+		strumlineManager.add(playerStrum);
+
+		for (line in strumlineManager)
+		{
+			line.screenCenter(X);
+			final mult = (line.ID - (strumlineManager.length - 1) / 2) * (line.width * 1.2);
+			line.x += mult;
+		}
 	}
 
 	private function startCountdown():Void
