@@ -2,7 +2,7 @@ package funkin.backend;
 
 import flixel.FlxSprite;
 import flixel.animation.FlxAnimationController;
-import flixel.graphics.frames.FlxFrame;
+import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxPoint;
 
 class MusicBeatSprite extends FlxSprite
@@ -20,8 +20,8 @@ class MusicBeatSprite extends FlxSprite
 class MusicBeatAnimation extends FlxAnimationController
 {
     public var offsets:Map<String, Array<Dynamic>>;
-    public var framesAnimation:Map<String, FlxFrame>;
-    public var frames:Map<String, FlxFrame>;
+    public var framesAnimation:Map<String, FlxFramesCollection>;
+    public var frames:Map<String, FlxFramesCollection>;
 
     public function new(sprite:FlxSprite)
     {
@@ -30,7 +30,7 @@ class MusicBeatAnimation extends FlxAnimationController
         super(sprite);
     }
 
-    public function createFrame(id:String, frame:FlxFrame):Void
+    public function createFrame(id:String, frame:FlxFramesCollection):Void
     {
         frames[id] = frame;
     }
@@ -48,56 +48,56 @@ class MusicBeatAnimation extends FlxAnimationController
     public override function add(name:String, frames:Array<Int>, 
         framerate:Float = 30.0, looped:Bool = true, flipX:Bool = false, flipY:Bool = false):Void
     {
-        var oldFrame:FlxFrame = null;
+        var oldFrame:FlxFramesCollection = null;
 
         if (framesAnimation.exists(name))
         {
-            oldFrame = _sprite.frame;
-            _sprite.frame = framesAnimation[name];
+            oldFrame = _sprite.frames;
+            _sprite.frames = framesAnimation[name];
         }
 
         super.add(name, frames, framerate, looped, flipX, flipY);
 
-        _sprite.frame = oldFrame;
+        _sprite.frames = oldFrame;
     }
 
     public override function addByPrefix(name:String, prefix:String, 
         frameRate:Float = 30.0, looped:Bool = true, flipX:Bool = false, flipY:Bool = false):Void
     {
-        var oldFrame:FlxFrame = null;
+        var oldFrame:FlxFramesCollection = null;
 
         if (framesAnimation.exists(name))
         {
-            oldFrame = _sprite.frame;
-            _sprite.frame = framesAnimation[name];
+            oldFrame = _sprite.frames;
+            _sprite.frames = framesAnimation[name];
         }
 
         super.addByPrefix(name, prefix, frameRate, looped, flipX, flipY);
 
-        _sprite.frame = oldFrame;
+        _sprite.frames = oldFrame;
     }
 
     public override function addByIndices(Name:String, Prefix:String, 
         Indices:Array<Int>, Postfix:String, FrameRate:Float = 30, Looped:Bool = true, 
         FlipX:Bool = false, FlipY:Bool = false):Void
     {
-        var oldFrame:FlxFrame = null;
+        var oldFrame:FlxFramesCollection = null;
 
         if (framesAnimation.exists(name))
         {
-            oldFrame = _sprite.frame;
-            _sprite.frame = framesAnimation[name];
+            oldFrame = _sprite.frames;
+            _sprite.frames = framesAnimation[name];
         }
 
         super.addByIndices(Name, Prefix, Indices, Postfix, FrameRate, Looped, FlipX, FlipY);
 
-        _sprite.frame = oldFrame;
+        _sprite.frames = oldFrame;
     }
 
     public override function play(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void
     {
         if (framesAnimation.exists(animName))
-            _sprite.frame = framesAnimation[name];
+            _sprite.frames = framesAnimation[name];
 
         super.play(animName, force, reversed, frame);
 

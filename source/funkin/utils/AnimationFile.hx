@@ -5,6 +5,7 @@ import funkin.utils.PointsObject;
 typedef AnimationFile = 
 {
     var path:String;
+    var ?size:Null<PointsObject>;
     var name:String;
     var ?prefix:Null<String>;
     var ?frames:Null<Array<Int>>;
