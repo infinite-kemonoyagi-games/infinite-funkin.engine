@@ -2,8 +2,8 @@ package funkin.utils;
 
 typedef PointsObject = 
 {
-    var x:Int;
-    var y:Int;
+    var x:Float;
+    var y:Float;
 }
 
 typedef PointsObjectBoolean = 
