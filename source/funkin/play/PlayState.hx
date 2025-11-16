@@ -3,6 +3,8 @@ package funkin.play;
 import flixel.FlxG;
 import flixel.sound.FlxSound;
 import funkin.backend.MusicBeatState;
+import funkin.play.notes.data.NoteFile;
+import funkin.play.notes.strum.StrumLine;
 import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
@@ -41,6 +43,11 @@ class PlayState extends MusicBeatState
 		super.create();
 
 		setupSong();
+
+		final URL:String = 'assets/data/note/';
+		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
+		var strumline:StrumLine = new StrumLine(4, strumFile, opponent);
+		add(strumline);
 
 		startCountdown();
 	}
