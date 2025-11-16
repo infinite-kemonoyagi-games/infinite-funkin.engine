@@ -1,6 +1,8 @@
 package funkin.play.notes.strum;
 
-class StrumNote
+import funkin.backend.MusicBeatSprite.MusicBeatAnimation;
+
+class StrumNote extends MusicBeatAnimation
 {
     
 }
