@@ -56,7 +56,7 @@ class StrumNote extends MusicBeatSprite
                         anim.offsets.y, anim?.centerOffsets ?? false);
             }
         }
-        animation.play(animation.getNameList()[0]);
+        animation.play("static");
         scale.set(file.size.x, file.size.y);
     }
 }

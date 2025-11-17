@@ -15,23 +15,17 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
 
     public var notes:Map<String, StrumNote>;
 
+    public var character:String;
     public var type:ChartCharacterType = null;
 
-    public function new(length:Int, file:NoteFile, type:ChartCharacterType)
+    public function new(length:Int, file:NoteFile, character:String, type:ChartCharacterType)
     {
         super();
 
+        this.character = character;
         this.type = type;
 
-        file.notes.sort((a, b) ->
-        {
-            if (!names[length].contains(a.note))
-            {
-                file.notes.remove(a);
-                return 0;
-            }
-            return names[length].indexOf(a.note) - names[length].indexOf(b.note);
-        });
+        file.notes = file.notes.filter(item -> names[length].contains(item.note));
 
         notes = new Map();
 
