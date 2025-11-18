@@ -122,12 +122,12 @@ class PlayState extends MusicBeatState
 		strumlineManager = new StrumLineManager();
 		add(strumlineManager);
 
-		opponentStrum = new StrumLine(notesLength, strumFile, chartData.current.opponent, opponent);
+		opponentStrum = new StrumLine(notesLength, strumFile, chartData.current.opponent, OPPONENT);
 		opponentStrum.ID = 0;
 		opponentStrum.y = 50;
 		strumlineManager.add(opponentStrum);
 
-		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, player);
+		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, PLAYER);
 		playerStrum.ID = 1;
 		playerStrum.y = 50;
 		strumlineManager.add(playerStrum);
@@ -172,7 +172,7 @@ class PlayState extends MusicBeatState
 			vocal.loadEmbedded('assets/music/songs/$level/Voices-${character.name}.ogg');
 			FlxG.sound.list.add(vocal);
 			vocals.set(character.name, vocal);
-			if (character.type == player) playerVocals.set(character.name, vocal);
+			if (character.type == PLAYER) playerVocals.set(character.name, vocal);
 		}
 
 		final tempo = songMeta.tempo[0].data;

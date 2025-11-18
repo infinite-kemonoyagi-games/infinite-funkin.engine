@@ -9,6 +9,7 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.data.NoteFile;
+import funkin.song.data.chart.ChartData.ChartCharacterType;
 import funkin.song.data.chart.ChartNoteData;
 
 class NoteBase extends MusicBeatSprite
@@ -18,6 +19,7 @@ class NoteBase extends MusicBeatSprite
     public var length:Float = 0.0;
 
     public var character:String = "bf";
+    public var type:ChartCharacterType = null;
 
     public var alt:Bool = false;
     public var data:String = "";
@@ -38,6 +40,8 @@ class NoteBase extends MusicBeatSprite
 
     public var state:MusicBeatState = null;
 
+    public var mustBeHit(get, never):Bool;
+
     public function new(chart:ChartNoteData, file:NoteFile, info:NoteData, inEditor:Bool)
     {
         super();
@@ -53,6 +57,7 @@ class NoteBase extends MusicBeatSprite
         position = chart.position;
         length = chart.length;
         character = chart.character;
+        type = chart.type;
         alt = chart.alt;
         data = chart.data;
         skin = chart.skin;
@@ -121,7 +126,7 @@ class NoteBase extends MusicBeatSprite
     {
         var speed:Float = 0.0;
         if (this.speed != 0)
-            if (speedMode != null && speedMode == mult)
+            if (speedMode != null && speedMode == MULT)
                 speed = globalSpeed * this.speed;
             else
                 speed = this.speed;
@@ -129,4 +134,6 @@ class NoteBase extends MusicBeatSprite
 
         return speed;
     }
+
+    private function get_mustBeHit():Bool return position <= state.conductor.position;
 }
