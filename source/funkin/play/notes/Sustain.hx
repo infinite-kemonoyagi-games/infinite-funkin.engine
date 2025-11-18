@@ -51,6 +51,18 @@ class Sustain extends NoteBase
         sustains.add(this);
     }
 
+    public override function kill():Void
+    {
+        super.kill();
+        tail.kill();
+    }
+
+    public override function destroy():Void
+    {
+        super.destroy();
+        tail.destroy();
+    }
+
     public override function draw():Void
     {
         super.draw();

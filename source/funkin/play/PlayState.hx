@@ -75,6 +75,26 @@ class PlayState extends MusicBeatState
 				note.spawn(strumlineManager.strumlines[note.character], notes, sustains);
 			});
 		}
+
+		for (note in notes)
+		{
+			if (note.type == OPPONENT && note.mustBeHit)
+			{
+				note.kill();
+				note.destroy();
+				notes.remove(note, true);
+			}
+		}
+
+		for (note in sustains)
+		{
+			if (note.type == OPPONENT && note.tail.mustBeHit)
+			{
+				note.kill();
+				note.destroy();
+				sustains.remove(note, true);
+			}
+		}
 	}
 
 	private function generateNotes():Void
