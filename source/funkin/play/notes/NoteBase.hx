@@ -40,6 +40,8 @@ class NoteBase extends MusicBeatSprite
 
     public var state:MusicBeatState = null;
 
+    public var pressed:Bool = false;
+
     public var mustBeHit(get, never):Bool;
 
     public function new(chart:ChartNoteData, file:NoteFile, info:NoteData, inEditor:Bool)
@@ -114,6 +116,8 @@ class NoteBase extends MusicBeatSprite
         super.update(elapsed);
 
         if (inEditor) return;
+
+        if (!visible) visible = true;
         
         var speed:Float = getCurrentSpeed();
 

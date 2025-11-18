@@ -2,6 +2,7 @@ package funkin.play;
 
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.math.FlxRect;
 import flixel.sound.FlxSound;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.Note;
@@ -80,6 +81,14 @@ class PlayState extends MusicBeatState
 		{
 			if (note.type == OPPONENT && note.mustBeHit)
 			{
+				note.pressed = true;
+				note.kill();
+				note.destroy();
+				notes.remove(note, true);
+			}
+
+			if (note.y <= -note.height)
+			{
 				note.kill();
 				note.destroy();
 				notes.remove(note, true);
@@ -88,7 +97,24 @@ class PlayState extends MusicBeatState
 
 		for (note in sustains)
 		{
-			if (note.type == OPPONENT && note.tail.mustBeHit)
+			final tail = note.tail;
+			final center:Float = note.reference.y + note.reference.height / 2;
+
+			if (note.y + note.offset.y <= note.reference.y + note.reference.height / 2 
+				&& note.mustBeHit && note.parent.pressed)
+			{
+				final width = Math.max(note.width, tail.width);
+				final height = note.height + tail.height;
+				final rect:FlxRect = new FlxRect(0, center - note.y, width * 2, height * 2);
+				rect.y /= note.scale.y;
+				rect.height -= rect.y;
+				note.clipRect = rect;
+
+				if (tail.y + tail.offset.y <= tail.reference.y + tail.reference.height / 2)
+					tail.clipRect = rect;
+			}
+
+			if (note.type == OPPONENT && tail.mustBeHit)
 			{
 				note.kill();
 				note.destroy();

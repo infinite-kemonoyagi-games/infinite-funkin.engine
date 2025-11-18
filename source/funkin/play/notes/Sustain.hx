@@ -39,14 +39,11 @@ class Sustain extends NoteBase
         reference = parent.reference;
         tail.reference = parent.reference;
 
-        active = visible = true;
-        tail.active = tail.visible = true;
+        active = true;
+        tail.active = true;
 
         globalSpeed = parent.globalSpeed;
         tail.globalSpeed = globalSpeed;
-
-        y = -height - camera.y;
-        tail.y = -tail.height - camera.y;
 
         sustains.add(this);
     }

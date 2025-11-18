@@ -45,10 +45,8 @@ class Note extends NoteBase
         this.strumline = strumline;
         reference = strumnote;
 
-        active = visible = true;
+        active = true;
         notes.add(this);
-
-        y = -height - camera.y;
 
         if (sustain != null) sustain.spawn(sustains);
     }
