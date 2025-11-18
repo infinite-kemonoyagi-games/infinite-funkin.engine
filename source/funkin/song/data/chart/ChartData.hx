@@ -41,7 +41,7 @@ typedef ChartNoteSkins =
 enum abstract ChartNoteType(String) from String to String 
 {
     public inline final STRUM = "strum";
-    public inline final NOTE = "NOTE";
+    public inline final NOTE = "note";
 }
 
 typedef ChartCharacter =
@@ -52,7 +52,7 @@ typedef ChartCharacter =
 
 enum abstract ChartCharacterType(String) from String
 {
-    var PLAYER = "PLAYER";
-    var OPPONENT = "OPPONENT";
-    var GIRLFRIEND = "GIRLFRIEND";
+    var PLAYER = "player";
+    var OPPONENT = "opponent";
+    var GIRLFRIEND = "girlfriend";
 }

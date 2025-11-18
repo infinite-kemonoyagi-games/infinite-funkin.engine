@@ -23,10 +23,10 @@ typedef ChartNoteData =
 
 enum abstract SustainAnimation(String) from String to String
 {
-    public inline final NONE = "NONE";
-    public inline final LOOP = "LOOP";
-    public inline final STEPS = "STEPS";
-    public inline final BEATS = "BEATS";
+    public inline final NONE = "none";
+    public inline final LOOP = "loop";
+    public inline final STEPS = "steps";
+    public inline final BEATS = "beats";
 }
 
 enum abstract NoteSpeedMode(String) from String to String
