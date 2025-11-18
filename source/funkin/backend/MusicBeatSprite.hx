@@ -44,7 +44,8 @@ class MusicBeatAnimation extends FlxAnimationController
     public function setOffsets(animation:String, x:Float, y:Float, ?centerOffsets:Bool = false):Void
     {
         if (offsets[animation] == null) offsets[animation] = [];
-        offsets[animation].push([new FlxPoint(x, y), centerOffsets]);
+        offsets[animation].push(new FlxPoint(x, y));
+        offsets[animation].push(centerOffsets);
     }
 
     public override function add(name:String, frames:Array<Int>, 
