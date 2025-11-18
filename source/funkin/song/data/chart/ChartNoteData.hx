@@ -1,11 +1,14 @@
 package funkin.song.data.chart;
 
+import funkin.song.data.chart.ChartData.ChartCharacterType;
+
 typedef ChartNoteData = 
 {
     var position:Float;
 
     var name:String;
     var character:String;
+    var type:ChartCharacterType;
     var length:Float;
 
     var ?sustainAnimation:Null<SustainAnimation>;
