@@ -40,6 +40,8 @@ class NoteBase extends MusicBeatSprite
 
     public var state:MusicBeatState = null;
 
+    public var killed:Bool = false;
+
     public var pressed:Bool = false;
 
     public var mustBeHit(get, never):Bool;
@@ -109,6 +111,12 @@ class NoteBase extends MusicBeatSprite
             }
         }
         scale.set(file.size.x, file.size.y);
+    }
+
+    public override function kill():Void
+    {
+        killed = true;
+        super.kill();
     }
 
     public override function update(elapsed:Float):Void

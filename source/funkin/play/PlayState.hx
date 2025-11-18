@@ -2,6 +2,7 @@ package funkin.play;
 
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.sound.FlxSound;
 import funkin.backend.MusicBeatState;
@@ -115,6 +116,26 @@ class PlayState extends MusicBeatState
 			}
 
 			if (note.type == OPPONENT && tail.mustBeHit)
+			{
+				note.pressed = true;
+				note.kill();
+				note.destroy();
+				sustains.remove(note, true);
+			}
+
+			if (note.parent.killed && !note.parent.pressed)
+			{
+				note.alpha = tail.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
+
+				if (note.alpha == 0)
+				{
+					note.kill();
+					note.destroy();
+					sustains.remove(note, true);
+				}
+			}
+
+			if (tail.y <= -tail.height)
 			{
 				note.kill();
 				note.destroy();
