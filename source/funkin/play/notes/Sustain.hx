@@ -19,12 +19,16 @@ class Sustain extends NoteBase
         this.state = parent.state;
         this.parent = parent;
 
+        alpha = 0.6;
+
         animation.play("sustain");
+        updateHitbox();
 
         tail = new NoteBase(parent.chart, parent.file, parent.info, parent.inEditor);
         tail.state = state;
         tail.length = 0.0;
         tail.position += length;
+        tail.alpha = 0.6;
         tail.animation.play("sustain-end");
     }
 
@@ -41,8 +45,8 @@ class Sustain extends NoteBase
         globalSpeed = parent.globalSpeed;
         tail.globalSpeed = globalSpeed;
 
-        y = -height;
-        tail.y = -tail.height;
+        y = -height - camera.y;
+        tail.y = -tail.height - camera.y;
 
         sustains.add(this);
     }
@@ -57,6 +61,13 @@ class Sustain extends NoteBase
     {
         super.update(elapsed);
         if (tail.active) tail.update(elapsed);
+
+        final sub = (parent?.height ?? 0) / 2;
+        final len = length * (0.45 * getCurrentSpeed());
+
+        setGraphicSize(width, (len - sub) + 10);
+        updateHitbox();
+        y += sub;
     }
 
     @:noCompletion

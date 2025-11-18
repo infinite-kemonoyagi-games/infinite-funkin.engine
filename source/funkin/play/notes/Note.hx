@@ -48,7 +48,7 @@ class Note extends NoteBase
         active = visible = true;
         notes.add(this);
 
-        y = -height;
+        y = -height - camera.y;
 
         if (sustain != null) sustain.spawn(sustains);
     }

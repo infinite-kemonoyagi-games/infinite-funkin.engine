@@ -11,7 +11,9 @@ class Main extends Sprite
 	{
 		super();
 		
-		addChild(new FlxGame(0, 0, null, 120, 120));
+		addChild(new FlxGame());
+
+		FlxG.fixedTimestep = false;
 
 		FlxG.switchState(() -> new PlayState("bopeebo", "normal"));
 	}

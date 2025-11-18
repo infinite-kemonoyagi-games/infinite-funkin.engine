@@ -114,8 +114,7 @@ class NoteBase extends MusicBeatSprite
 
         x = reference.x - ((width - reference.width) / 2);
 
-        y = (reference.y - ((height - reference.height) / 2)) 
-            + (position - state.conductor.position) * (0.45 * FlxMath.roundDecimal(speed, 2));
+        y = reference.y + (position - state.conductor.position) * (0.45 * FlxMath.roundDecimal(speed, 2));
     }
 
     private function getCurrentSpeed():Float
