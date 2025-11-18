@@ -1,11 +1,14 @@
 package funkin.play;
 
 import flixel.FlxG;
-import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.sound.FlxSound;
 import funkin.backend.MusicBeatState;
+import funkin.play.notes.Note;
+import funkin.play.notes.Sustain;
 import funkin.play.notes.data.NoteFile;
 import funkin.play.notes.strum.StrumLine;
+import funkin.play.notes.strum.StrumLineManager;
 import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
@@ -27,9 +30,15 @@ class PlayState extends MusicBeatState
 	private var songMeta:SongMetaData = null; // temporal... or maybe not
 	private var chartData:ChartData = null;
 
-	public var strumlineManager:FlxTypedSpriteGroup<StrumLine>;
+	public var strumlineManager:StrumLineManager;
 	public var playerStrum:StrumLine;
 	public var opponentStrum:StrumLine;
+
+	private var unspawnedNotes:Array<Note> = null;
+	public var notes:FlxTypedGroup<Note> = null;
+	public var sustains:FlxTypedGroup<Sustain> = null;
+
+	private var notesLength:Int = 4;
 
 	public function new(level:String, difficulty:String)
 	{
@@ -50,6 +59,7 @@ class PlayState extends MusicBeatState
 		setupSong();
 
 		spawnStrumlines();
+		generateNotes();
 
 		startCountdown();
 	}
@@ -57,6 +67,51 @@ class PlayState extends MusicBeatState
 	public override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+
+		for (note in unspawnedNotes)
+		{
+			note.waitingToSpawn(unspawnedNotes, () -> 
+			{
+				note.spawn(strumlineManager.strumlines[note.character], notes, sustains);
+			});
+		}
+	}
+
+	private function generateNotes():Void
+	{
+		notes = new FlxTypedGroup();
+		add(notes);
+		sustains = new FlxTypedGroup();
+		add(sustains);
+
+		unspawnedNotes = [];
+		final storedSkins:Map<String, NoteFile> = [];
+
+		for (note in chartData.notes)
+		{
+			final URL:String = 'assets/data/note/';
+
+			var skinFile:NoteFile = null;
+			var curSkin:String = "";
+
+			if (note.skin == null || note.skin == "")
+				curSkin = chartData.current.notes;
+			else 
+				curSkin = note.skin;
+			
+			if (!storedSkins.exists(curSkin))
+			{
+				skinFile = cast Json.parse(Assets.getText(URL + '$curSkin.json'));
+				skinFile.notes = skinFile.notes.filter(item -> StrumLine.names[notesLength].contains(item.note));
+				storedSkins[curSkin] = skinFile;
+			}
+			else skinFile = storedSkins[curSkin];
+
+			final info = skinFile.notes[StrumLine.names[notesLength].indexOf(note.name)];
+			final spr:Note = new Note(note, skinFile, info, this, false);
+			spr.globalSpeed = chartData.speed;
+			unspawnedNotes.push(spr);
+		}
 	}
 
 	private function spawnStrumlines():Void
@@ -64,15 +119,15 @@ class PlayState extends MusicBeatState
 		final URL:String = 'assets/data/note/';
 		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
 
-		strumlineManager = new FlxTypedSpriteGroup();
+		strumlineManager = new StrumLineManager();
 		add(strumlineManager);
 
-		opponentStrum = new StrumLine(4, strumFile, opponent);
+		opponentStrum = new StrumLine(notesLength, strumFile, chartData.current.opponent, opponent);
 		opponentStrum.ID = 0;
 		opponentStrum.y = 50;
 		strumlineManager.add(opponentStrum);
 
-		playerStrum = new StrumLine(4, strumFile, player);
+		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, player);
 		playerStrum.ID = 1;
 		playerStrum.y = 50;
 		strumlineManager.add(playerStrum);
