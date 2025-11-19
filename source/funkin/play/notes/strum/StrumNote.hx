@@ -6,11 +6,15 @@ import flixel.math.FlxPoint;
 import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.play.notes.data.NoteFile;
+import funkin.song.data.chart.ChartNoteData.SustainAnimation;
 
 class StrumNote extends MusicBeatSprite
 {
     public var name:String;
     public var data:NoteData;
+
+    public var hold:Bool = false;
+    public var animSustain:SustainAnimation;
 
     public function new(data:NoteData, file:NoteFile)
     {

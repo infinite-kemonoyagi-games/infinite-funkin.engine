@@ -36,8 +36,8 @@ class Sustain extends NoteBase
     {
         strumline = parent.strumline;
 
-        reference = parent.reference;
-        tail.reference = parent.reference;
+        reference = strumnote;
+        tail.reference = strumnote;
 
         active = true;
         tail.active = true;

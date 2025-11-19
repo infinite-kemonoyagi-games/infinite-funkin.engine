@@ -11,6 +11,7 @@ import funkin.play.notes.Sustain;
 import funkin.play.notes.data.NoteFile;
 import funkin.play.notes.strum.StrumLine;
 import funkin.play.notes.strum.StrumLineManager;
+import funkin.play.notes.strum.StrumNote;
 import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
@@ -32,6 +33,7 @@ class PlayState extends MusicBeatState
 	private var songMeta:SongMetaData = null; // temporal... or maybe not
 	private var chartData:ChartData = null;
 
+	public var strumline:FlxTypedGroup<StrumNote>;
 	public var strumlineManager:StrumLineManager;
 	public var playerStrum:StrumLine;
 	public var opponentStrum:StrumLine;
@@ -70,6 +72,17 @@ class PlayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
+		for (strum in opponentStrum)
+		{
+			final animName = strum.animation.curAnim.name;
+			if (!strum.hold && animName == 'confirmed' && strum.animation.finished)
+				strum.animation.play('static');
+		}
+
+		for (strum in strumline)
+			if (strum.animation.curAnim.name != 'confirmed')
+				strum.centerOffsets();
+
 		for (note in unspawnedNotes)
 		{
 			note.waitingToSpawn(unspawnedNotes, () -> 
@@ -86,6 +99,9 @@ class PlayState extends MusicBeatState
 				note.kill();
 				note.destroy();
 				notes.remove(note, true);
+
+				note.strumnote.animation.play("confirmed", true);
+				note.strumnote.hold = note.length > 0;
 			}
 
 			if (note.y <= -note.height)
@@ -121,6 +137,7 @@ class PlayState extends MusicBeatState
 				note.kill();
 				note.destroy();
 				sustains.remove(note, true);
+				note.strumnote.hold = false;
 			}
 
 			if (note.parent.killed && !note.parent.pressed)
@@ -186,6 +203,9 @@ class PlayState extends MusicBeatState
 		final URL:String = 'assets/data/note/';
 		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
 
+		strumline = new FlxTypedGroup();
+		add(strumline);
+
 		strumlineManager = new StrumLineManager();
 		add(strumlineManager);
 
@@ -193,12 +213,14 @@ class PlayState extends MusicBeatState
 		opponentStrum.ID = 0;
 		opponentStrum.y = 50;
 		strumlineManager.add(opponentStrum);
-
+		for (note in opponentStrum) strumline.add(note);
+		
 		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, PLAYER);
 		playerStrum.ID = 1;
 		playerStrum.y = 50;
 		strumlineManager.add(playerStrum);
-
+		for (note in playerStrum) strumline.add(note);
+		
 		for (line in strumlineManager)
 		{
 			line.screenCenter(X);
