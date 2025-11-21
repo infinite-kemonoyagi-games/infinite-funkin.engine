@@ -18,12 +18,15 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
     public var character:String;
     public var type:ChartCharacterType = null;
 
+    public var botplay:Bool = false;
+
     public function new(length:Int, file:NoteFile, character:String, type:ChartCharacterType)
     {
         super();
 
         this.character = character;
         this.type = type;
+        botplay = type != PLAYER;
 
         file.notes = file.notes.filter(item -> names[length].contains(item.note));
 

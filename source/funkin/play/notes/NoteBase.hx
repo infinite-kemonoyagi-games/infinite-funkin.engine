@@ -1,11 +1,8 @@
 package funkin.play.notes;
 
 import flixel.FlxSprite;
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxTileFrames;
 import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
-import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.data.NoteFile;

@@ -12,6 +12,8 @@ class Sustain extends NoteBase
     public var parent:Note;
     public var tail:NoteBase;
 
+    public var botplay(get, never):Bool;
+
     public function new(parent:Note)
     {
         super(parent.chart, parent.file, parent.info, parent.inEditor);
@@ -87,5 +89,15 @@ class Sustain extends NoteBase
             return strumline.notes[name];
         }
         return null;
+    }
+
+    @:noCompletion
+    private function get_botplay():Bool
+    {
+        if (strumnote != null && strumnote.parent != null)
+        {
+            return strumnote.parent.botplay;
+        }
+        return false;
     }
 }

@@ -14,6 +14,8 @@ class Note extends NoteBase
 
     public var sustain:Null<Sustain> = null;
 
+    public var botplay(get, never):Bool;
+
     public function new(chart:ChartNoteData, file:NoteFile, info:NoteData, state:MusicBeatState, inEditor:Bool)
     {
         super(chart, file, info, inEditor);
@@ -60,5 +62,15 @@ class Note extends NoteBase
             return strumline.notes[name];
         }
         return null;
+    }
+
+    @:noCompletion
+    private function get_botplay():Bool
+    {
+        if (strumnote != null && strumnote.parent != null)
+        {
+            return strumnote.parent.botplay;
+        }
+        return false;
     }
 }

@@ -1,9 +1,6 @@
 package funkin.play.notes.strum;
 
-import flixel.graphics.frames.FlxAtlasFrames;
-import flixel.graphics.frames.FlxTileFrames;
 import flixel.math.FlxPoint;
-import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.play.notes.data.NoteFile;
 import funkin.song.data.chart.ChartNoteData.SustainAnimation;

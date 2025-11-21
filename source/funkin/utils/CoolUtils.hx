@@ -25,6 +25,7 @@ final class CoolUtils
                     file.offsets.y, file?.centerOffsets ?? false);
             case "sparrow":
                 final tex = FlxAtlasFrames.fromSparrow(frame + ".png", frame + ".xml");
+                tex.parent.persist = true;
                 sprite.getComplexAnim().createFrame(file.path, tex);
                 sprite.getComplexAnim().setAnimToFrame(file.name, file.path);
 
@@ -41,7 +42,6 @@ final class CoolUtils
                 sprite.getComplexAnim().setOffsets(file.name, file.offsets.x, 
                     file.offsets.y, file?.centerOffsets ?? false);
         }
-        sprite.animation.play(sprite.animation.getNameList()[0]);
         sprite.scale.copyFrom(scale);
     }
 
