@@ -32,7 +32,7 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
         var lastNote:StrumNote = null;
         for (index => name in names[length])
         {
-            final note:StrumNote = new StrumNote(file.notes[index], file);
+            final note:StrumNote = new StrumNote(file.notes[index], file, this);
             if (lastNote != null) note.x = lastNote.x + (lastNote.width * lastNote.scale.x);
             notes[name] = note;
             add(note);

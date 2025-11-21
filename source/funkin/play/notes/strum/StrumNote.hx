@@ -7,6 +7,7 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
 import funkin.backend.MusicBeatSprite;
 import funkin.play.notes.data.NoteFile;
 import funkin.song.data.chart.ChartNoteData.SustainAnimation;
+import funkin.utils.CoolUtils;
 
 class StrumNote extends MusicBeatSprite
 {
@@ -16,51 +17,17 @@ class StrumNote extends MusicBeatSprite
     public var hold:Bool = false;
     public var animSustain:SustainAnimation;
 
-    public function new(data:NoteData, file:NoteFile)
+    public var parent:StrumLine = null;
+
+    public function new(data:NoteData, file:NoteFile, parent:StrumLine)
     {
         super();
 
-        final urls:Map<String, String> = [];
-        for (url in file.spriteType.urls)
-        {
-            urls[url.id] = url.path;
-        }
+        this.parent = parent;
 
-        name = data.note;
-        for (anim in data.animations)
-        {
-            final frame:FlxGraphicAsset = urls[anim.path];
-            switch file.spriteType.id
-            {
-                case "default":
-                    final tex = FlxTileFrames.fromGraphic(frame, FlxPoint.get(anim.size.x, anim.size.y));
-                    getComplexAnim().createFrame(anim.path, tex);
-                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
-
-                    getComplexAnim().add(anim.name, anim.frames, anim.framerate, anim.looped, 
-                        anim.flip.x, anim.flip.y);
-                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
-                        anim.offsets.y, anim?.centerOffsets ?? false);
-                case "sparrow":
-                    final tex = FlxAtlasFrames.fromSparrow(frame + ".png", frame + ".xml");
-                    getComplexAnim().createFrame(anim.path, tex);
-                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
-
-                    if (anim.frames == null)
-                    {
-                        getComplexAnim().addByPrefix(anim.name, anim.prefix, 
-                            anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
-                    }
-                    else
-                    {
-                        getComplexAnim().addByIndices(anim.name, anim.prefix, anim.frames, 
-                            "", anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
-                    }
-                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
-                        anim.offsets.y, anim?.centerOffsets ?? false);
-            }
-        }
+        final urls:Map<String, String> = CoolUtils.getAnimationURLS(file.spriteType);
+        for (anim in data.animations) 
+            CoolUtils.loadAnimationFile(this, file.spriteType, anim, urls, new FlxPoint(file.size.x, file.size.y));
         animation.play("static");
-        scale.set(file.size.x, file.size.y);
     }
 }

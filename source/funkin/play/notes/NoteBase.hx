@@ -11,6 +11,7 @@ import funkin.backend.MusicBeatState;
 import funkin.play.notes.data.NoteFile;
 import funkin.song.data.chart.ChartData.ChartCharacterType;
 import funkin.song.data.chart.ChartNoteData;
+import funkin.utils.CoolUtils;
 
 class NoteBase extends MusicBeatSprite
 {
@@ -68,49 +69,9 @@ class NoteBase extends MusicBeatSprite
         speed = chart.speed;
         speedMode = chart.speedMode;
 
-        final urls:Map<String, String> = [];
-        for (url in file.spriteType.urls)
-        {
-            urls[url.id] = url.path;
-        }
-
-        name = info.note;
-        for (anim in info.animations)
-        {
-            switch file.spriteType.id
-            {
-                case "default":
-                    final frame:FlxGraphicAsset = urls[anim.path] + '.png';
-                    final tex = FlxTileFrames.fromGraphic(frame, FlxPoint.get(anim.size.x, anim.size.y));
-                    getComplexAnim().createFrame(anim.path, tex);
-                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
-
-                    getComplexAnim().add(anim.name, anim.frames, anim.framerate, anim.looped, 
-                        anim.flip.x, anim.flip.y);
-                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
-                        anim.offsets.y, anim?.centerOffsets ?? false);
-                case "sparrow":
-                    final frame:String = urls[anim.path];
-                    final tex = FlxAtlasFrames.fromSparrow(frame + ".png", frame + ".xml");
-                    tex.parent.persist = true;
-                    getComplexAnim().createFrame(anim.path, tex);
-                    getComplexAnim().setAnimToFrame(anim.name, anim.path);
-
-                    if (anim.frames == null)
-                    {
-                        getComplexAnim().addByPrefix(anim.name, anim.prefix, 
-                            anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
-                    }
-                    else
-                    {
-                        getComplexAnim().addByIndices(anim.name, anim.prefix, anim.frames, 
-                            "", anim.framerate, anim.looped, anim.flip.x, anim.flip.y);
-                    }
-                    getComplexAnim().setOffsets(anim.name, anim.offsets.x, 
-                        anim.offsets.y, anim?.centerOffsets ?? false);
-            }
-        }
-        scale.set(file.size.x, file.size.y);
+        final urls:Map<String, String> = CoolUtils.getAnimationURLS(file.spriteType);
+        for (anim in info.animations) 
+            CoolUtils.loadAnimationFile(this, file.spriteType, anim, urls, new FlxPoint(file.size.x, file.size.y));
     }
 
     public override function kill():Void
