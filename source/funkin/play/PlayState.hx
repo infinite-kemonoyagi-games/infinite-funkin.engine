@@ -8,6 +8,7 @@ import flixel.sound.FlxSound;
 import flixel.system.FlxAssets;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
+import flixel.util.FlxStringUtil;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.Note;
 import funkin.play.notes.NoteBase;
@@ -57,6 +58,7 @@ class PlayState extends MusicBeatState
 	public var comboGrp:ComboRating = null;
 
 	public var scoreTxt:FlxText = null;
+	public var timeTxt:FlxText = null;
 
 	public var score:Float = 0.0;
 	public var misses:Int = 0;
@@ -66,7 +68,7 @@ class PlayState extends MusicBeatState
 	public var notesPrec:Float = 0.0;
 	public var notesCount:Int = 0;
 
-	public var botplay:Bool = false;
+	public var botplay:Bool = true;
 
 	public function new(level:String, difficulty:String)
 	{
@@ -96,6 +98,12 @@ class PlayState extends MusicBeatState
 		scoreTxt.screenCenter(X);
 		add(scoreTxt);
 
+		timeTxt = new FlxText("0:00 | 0:01"); // if misses are 0 will not show in text
+		timeTxt.setFormat(FlxAssets.FONT_DEFAULT, 18, OUTLINE, FlxColor.BLACK);
+		timeTxt.y = 25;
+		timeTxt.screenCenter(X);
+		add(timeTxt);
+
 		spawnStrumlines();
 		generateNotes();
 
@@ -105,6 +113,8 @@ class PlayState extends MusicBeatState
 	public override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+
+		scoreTxt.scale.x = FlxMath.lerp(scoreTxt.scale.x, 1.0, elapsed * 6);
 
 		for (strum in strumline)
 		{
@@ -137,7 +147,16 @@ class PlayState extends MusicBeatState
 		else
 			scoreTxt.text = 'Score: $scoreFormat | Accuracy: $accuracyFormat%';
 
+		if (botplay) scoreTxt.text = 'Score: $scoreFormat | botplay mode';
+
 		scoreTxt.screenCenter(X);
+
+		final time:Float = conductor.position;
+		final length:Float = FlxG.sound.music?.length ?? 0;
+
+		timeTxt.text = '${FlxStringUtil.formatTime(time / 1000)} | ${FlxStringUtil.formatTime(length / 1000)}';
+
+		timeTxt.screenCenter(X);
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -152,15 +171,26 @@ class PlayState extends MusicBeatState
 				noteMiss(note);
 			}
 
-			if (note.botplay && note.mustBeHit) deleteNote(note, true);
+			if (note.botplay && note.mustBeHit) 
+			{
+				if (note.type == PLAYER) goodHit(note);
+				deleteNote(note, true);
+			}
 			if (note.y <= -note.height) deleteNote(note);
-
 		}
 
 		for (note in sustains)
 		{
 			final tail = note.tail;
 			final center:Float = note.reference.y + note.reference.height / 2;
+
+			final add:Float = 350 * (note.length / conductor.beatCrochet) * elapsed;
+			if (note.botplay && note.parent.pressed && note.type == PLAYER && !note.vanish)
+			{
+				note.pressed = true;
+				note.scoreAdded += add;
+				increaseScore(add);
+			}
 
 			if (note.y + note.offset.y <= note.reference.y + note.reference.height / 2 
 				&& note.mustBeHit && note.parent.pressed)
@@ -288,6 +318,8 @@ class PlayState extends MusicBeatState
 	public function goodHit(note:Note):Void
 	{
 		++combos;
+
+		scoreTxt.scale.x = 1.08;
 
 		final noteDiff:Float = Math.abs(note.position - conductor.position);
 		var rating:String = "sick";
