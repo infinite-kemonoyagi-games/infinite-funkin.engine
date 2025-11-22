@@ -5,6 +5,9 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
 import flixel.math.FlxRect;
 import flixel.sound.FlxSound;
+import flixel.system.FlxAssets;
+import flixel.text.FlxText;
+import flixel.util.FlxColor;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.Note;
 import funkin.play.notes.Sustain;
@@ -18,6 +21,7 @@ import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
 import funkin.song.data.chart.ChartData;
 import funkin.song.data.chart.ChartParser;
+import funkin.utils.FunkinStringUtils;
 import haxe.Json;
 import openfl.Assets;
 
@@ -47,6 +51,13 @@ class PlayState extends MusicBeatState
 
 	public var comboGrp:ComboRating = null;
 
+	public var scoreTxt:FlxText = null;
+
+	public var score:Float = 0.0;
+	public var misses:Int = 0;
+	public var accuracy:Float = 0.0;
+	public var combos:Int = 0;
+
 	public var botplay:Bool = false;
 
 	public function new(level:String, difficulty:String)
@@ -70,6 +81,12 @@ class PlayState extends MusicBeatState
 		comboGrp = new ComboRating(this);
 		comboGrp.loadSkin(chartData.current.notes);
 		add(comboGrp);
+
+		scoreTxt = new FlxText("Score: 0.0 | Accuracy: 0.00%"); // if misses are 0 will not show in text
+		scoreTxt.setFormat(FlxAssets.FONT_DEFAULT, 24, OUTLINE, FlxColor.BLACK);
+		scoreTxt.y = FlxG.height - scoreTxt.height;
+		scoreTxt.screenCenter(X);
+		add(scoreTxt);
 
 		spawnStrumlines();
 		generateNotes();
@@ -103,6 +120,16 @@ class PlayState extends MusicBeatState
 		updateNotes(elapsed);
 
 		if (!botplay) updateInput();
+
+		final scoreFormat:String = FunkinStringUtils.formatDecimals(score, 1);
+		final accuracyFormat:String = FunkinStringUtils.formatDecimals(accuracy, 2);
+
+		if (misses > 0)
+			scoreTxt.text = 'Score: $scoreFormat | Misses: $misses | Accuracy: $accuracyFormat%';
+		else
+			scoreTxt.text = 'Score: $scoreFormat | Accuracy: $accuracyFormat%';
+
+		scoreTxt.screenCenter(X);
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -118,8 +145,6 @@ class PlayState extends MusicBeatState
 
 				note.strumnote.animation.play("confirmed", true);
 				note.strumnote.hold = note.length > 0;
-
-				comboGrp.noteHit(note.skin, "sick", 0);
 			}
 
 			if (note.y <= -note.height)
