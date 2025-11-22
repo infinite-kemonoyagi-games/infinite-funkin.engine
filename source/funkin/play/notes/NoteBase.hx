@@ -47,6 +47,9 @@ class NoteBase extends MusicBeatSprite
 
     public var mustBeHit(get, never):Bool;
     public var canBeHit(get, never):Bool;
+    public var wasTooLate(get, never):Bool;
+
+    public var missed:Bool = false;
 
     public function new(chart:ChartNoteData, file:NoteFile, info:NoteData, inEditor:Bool)
     {
@@ -122,4 +125,7 @@ class NoteBase extends MusicBeatSprite
     private function get_canBeHit():Bool 
         return position > state.conductor.position - NoteBase.safeHitbox
                 && position < state.conductor.position + NoteBase.safeHitbox;
+
+    private function get_wasTooLate():Bool 
+        return position < state.conductor.position - NoteBase.safeHitbox;
 }

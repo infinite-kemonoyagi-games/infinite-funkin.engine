@@ -14,9 +14,10 @@ final class FunkinStringUtils
         final hasDot = result.contains(".");
         if (!hasDot) result += ".";
         final resultSplit:Array<String> = result.split(".")[1].split("");
-        if (resultSplit.length < precision || !hasDot)
+        if (resultSplit.length == 1 && resultSplit[0] == "") resultSplit.remove("");
+        if (resultSplit.length <= precision || !hasDot)
         {
-            final length:Int = precision - resultSplit.length + 1;
+            var length:Int = precision - resultSplit.length;
             for (_ in 0...length) result += "0";
         }
         return result;

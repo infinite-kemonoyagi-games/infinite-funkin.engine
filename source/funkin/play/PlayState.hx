@@ -10,6 +10,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import funkin.backend.MusicBeatState;
 import funkin.play.notes.Note;
+import funkin.play.notes.NoteBase;
 import funkin.play.notes.Sustain;
 import funkin.play.notes.data.NoteFile;
 import funkin.play.notes.strum.StrumLine;
@@ -22,6 +23,7 @@ import funkin.song.data.SongMetaData;
 import funkin.song.data.chart.ChartData;
 import funkin.song.data.chart.ChartParser;
 import funkin.utils.FunkinStringUtils;
+import funkin.utils.MathUtils;
 import haxe.Json;
 import openfl.Assets;
 
@@ -57,6 +59,9 @@ class PlayState extends MusicBeatState
 	public var misses:Int = 0;
 	public var accuracy:Float = 0.0;
 	public var combos:Int = 0;
+
+	public var notesPrec:Float = 0.0;
+	public var notesCount:Int = 0;
 
 	public var botplay:Bool = false;
 
@@ -119,7 +124,7 @@ class PlayState extends MusicBeatState
 
 		updateNotes(elapsed);
 
-		if (!botplay) updateInput();
+		if (!botplay) updateInput(elapsed);
 
 		final scoreFormat:String = FunkinStringUtils.formatDecimals(score, 1);
 		final accuracyFormat:String = FunkinStringUtils.formatDecimals(accuracy, 2);
@@ -136,23 +141,17 @@ class PlayState extends MusicBeatState
 	{
 		for (note in notes)
 		{
-			if (note.botplay && note.mustBeHit)
+			if (note.wasTooLate && !note.missed)
 			{
-				note.pressed = true;
-				note.kill();
-				note.destroy();
-				notes.remove(note, true);
-
-				note.strumnote.animation.play("confirmed", true);
-				note.strumnote.hold = note.length > 0;
+				if (note.length > 0) note.sustain.vanish = true;
+				note.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
+				if (note.alpha == 0) deleteNote(note);
+				noteMiss(note);
 			}
 
-			if (note.y <= -note.height)
-			{
-				note.kill();
-				note.destroy();
-				notes.remove(note, true);
-			}
+			if (note.botplay && note.mustBeHit) deleteNote(note, true);
+			if (note.y <= -note.height) deleteNote(note);
+
 		}
 
 		for (note in sustains)
@@ -176,38 +175,20 @@ class PlayState extends MusicBeatState
 					tail.clipRect = rect;
 			}
 
-			if (note.botplay && tail.mustBeHit)
-			{
-				note.pressed = true;
-				note.kill();
-				note.destroy();
-				sustains.remove(note, true);
-				note.strumnote.hold = false;
-			}
+			if (note.botplay && tail.mustBeHit) deleteSustain(note);
 
 			if (note.parent.killed && !note.parent.pressed || note.vanish)
 			{
 				note.alpha = tail.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
 
-				if (note.alpha == 0)
-				{
-					note.kill();
-					note.destroy();
-					sustains.remove(note, true);
-					note.strumnote.hold = false;
-				}
+				if (note.alpha == 0) deleteSustain(note);
 			}
 
-			if (tail.y <= -tail.height)
-			{
-				note.kill();
-				note.destroy();
-				sustains.remove(note, true);
-			}
+			if (tail.y <= -tail.height) deleteSustain(note);
 		}
 	}
 
-	private function updateInput():Void 
+	private function updateInput(elapsed:Float):Void 
 	{
 		final left:Bool = FlxG.keys.pressed.D;
 		final down:Bool = FlxG.keys.pressed.F;
@@ -234,7 +215,7 @@ class PlayState extends MusicBeatState
 
 			for (note in notes)
 			{
-				if (!note.botplay && note.canBeHit && justPresseds[note.ID])
+				if (!note.botplay && note.canBeHit && !note.wasTooLate && justPresseds[note.ID])
 				{
 					for (possible in notesDetected)
 					{
@@ -250,18 +231,12 @@ class PlayState extends MusicBeatState
 			{
 				for (note in notesDetected)
 				{
-					note.pressed = true;
-					note.kill();
-					note.destroy();
-					notes.remove(note, true);
-					note.strumnote.animation.play("confirmed", true);
+					goodHit(note);
+					deleteNote(note, true);
 				}
 			}
-			else
-			{
-				for (index => input in justPresseds) 
-					if (input) playerStrum.members[index].animation.play("pressed", true);
-			}
+			else 
+				for (index => input in justPresseds) if (input) badHit(index);
 		}
 
 		if (presseds.contains(true) || releaseds.contains(true))
@@ -271,16 +246,18 @@ class PlayState extends MusicBeatState
 				final isPressed:Bool = !note.botplay && note.parent.pressed && presseds[note.ID];
 				final hasVanish = !note.botplay && note.pressed && releaseds[note.ID];
 
+				final add:Float = 350 * (note.length / conductor.beatCrochet) * elapsed;
 				if (isPressed && !note.vanish)
 				{
 					note.pressed = true;
-					// increase score
+					note.scoreAdded += add;
+					increaseScore(add);
 				}
 				else if (!note.botplay && note.tail.canBeHit || hasVanish)
 				{
-					note.kill();
-					note.destroy();
-					sustains.remove(note, true);
+					deleteSustain(note);
+					if (hasVanish && !note.tail.canBeHit) increaseScore(-100.5, 0.5, true);
+					else increaseScore(note.scoreAdded - add);
 				}
 				else if (!note.botplay) break;
 			}
@@ -297,6 +274,92 @@ class PlayState extends MusicBeatState
 			animName = strum.animation.curAnim.name; // refresh name
 			if (animName != 'confirmed') strum.centerOffsets();
 		}
+	}
+
+	public function badHit(direction:Int):Void
+	{
+		increaseScore(-25.2, 0.5, true);
+		playerStrum.members[direction].animation.play("pressed", true);
+	}
+
+	public function goodHit(note:Note):Void
+	{
+		++combos;
+
+		final noteDiff:Float = Math.abs(note.position - conductor.position);
+		var rating:String = "sick";
+
+		if (noteDiff > NoteBase.safeHitbox * 0.9)
+		{
+			rating = 'bad';
+			increaseScore(350, 0.2);
+			notesPrec += 0.2;
+		}
+		else if (noteDiff > NoteBase.safeHitbox * 0.6)
+		{
+			rating = 'bad';
+			increaseScore(350, 0.45);
+			notesPrec += 0.45;
+		}
+		else if (noteDiff > NoteBase.safeHitbox * 0.3)
+		{
+			rating = 'good';
+			increaseScore(350, 0.75);
+			notesPrec += 0.75;
+		}
+		else
+		{
+			increaseScore(350);
+			++notesPrec;
+		}
+		updateAccuracy();
+
+		comboGrp.noteHit(note.skin, rating, combos);
+	}
+
+	public function noteMiss(note:Note):Void
+	{
+		note.missed = true;
+		updateAccuracy();
+		increaseScore(-150);
+		++misses;
+		combos = 0;
+	}
+
+	private function increaseScore(add:Float, mult:Float = 1.0, onlyMultHealth:Bool = false):Void
+	{
+		if (!onlyMultHealth) score += add * mult;
+		else score += add;
+		// health ++
+	}
+
+	public function deleteNote(note:Note, isPressed:Bool = false):Void
+	{
+		note.pressed = isPressed;
+		note.kill();
+		note.destroy();
+		if (isPressed)
+		{
+			note.strumnote.hold = note.length > 0;
+			note.strumnote.animation.play("confirmed", true);
+		}
+		notes.remove(note, true);
+	}
+
+	public function deleteSustain(sustain:Sustain):Void
+	{
+		sustain.parent.pressed = false;
+		sustain.pressed = false;
+		sustain.kill();
+		sustain.destroy();
+		sustain.strumnote.hold = false;
+		sustains.remove(sustain, true);
+	}
+
+	public function updateAccuracy():Void
+	{
+		++notesCount;
+		accuracy = MathUtils.floorDecimal(notesPrec / notesCount * 100, 2);
 	}
 
 	private function generateNotes():Void

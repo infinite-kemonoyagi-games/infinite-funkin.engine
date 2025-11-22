@@ -16,6 +16,8 @@ class Sustain extends NoteBase
 
     public var vanish:Bool = false;
 
+    public var scoreAdded:Float = 0;
+
     public function new(parent:Note)
     {
         super(parent.chart, parent.file, parent.info, parent.inEditor);

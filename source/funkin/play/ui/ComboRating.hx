@@ -54,7 +54,7 @@ class ComboRating extends FlxGroup
         final ratingSpr = ratingPool[skin].get();
         ratingSpr.loadRating(rating);
         ratingSpr.screenCenter();
-        ratingSpr.acceleration.y = 1200;
+        ratingSpr.acceleration.y = 550;
         ratingSpr.velocity.y = -FlxG.random.int(225, 275);
         ratingSpr.velocity.x = -FlxG.random.int(-10, 10);
         ratingGrp.add(ratingSpr);
