@@ -1,5 +1,7 @@
 package funkin.utils;
 
+using StringTools;
+
 final class FunkinStringUtils
 {
     /**
@@ -9,11 +11,13 @@ final class FunkinStringUtils
     {
         num = MathUtils.floorDecimal(num, precision);
         var result:String = '$num';
-        for (i in 0...precision)
+        final hasDot = result.contains(".");
+        if (!hasDot) result += ".";
+        final resultSplit:Array<String> = result.split(".")[1].split("");
+        if (resultSplit.length < precision || !hasDot)
         {
-            final value:Float = num * Math.pow(10, i + 1);
-            if (i == 0) result += ".";
-            if (value - Math.floor(value) == 0) result += "0";
+            final length:Int = precision - resultSplit.length + 1;
+            for (_ in 0...length) result += "0";
         }
         return result;
     }
