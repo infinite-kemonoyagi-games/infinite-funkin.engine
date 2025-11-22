@@ -44,6 +44,8 @@ class PlayState extends MusicBeatState
 
 	private var notesLength:Int = 4;
 
+	public var botplay:Bool = false;
+
 	public function new(level:String, difficulty:String)
 	{
 		this.level = level;
@@ -72,16 +74,16 @@ class PlayState extends MusicBeatState
 	{
 		super.update(elapsed);
 
-		for (strum in opponentStrum)
-		{
-			final animName = strum.animation.curAnim.name;
-			if (!strum.hold && animName == 'confirmed' && strum.animation.finished)
-				strum.animation.play('static');
-		}
-
 		for (strum in strumline)
-			if (strum.animation.curAnim.name != 'confirmed')
-				strum.centerOffsets();
+		{
+			final isBot:Bool = strum.parent.botplay;
+			var animName = strum.animation.curAnim.name;
+			if (isBot && !strum.hold && animName == 'confirmed' && strum.animation.finished)
+				strum.animation.play('static');
+			animName = strum.animation.curAnim.name; // refresh name
+
+			if (animName != 'confirmed') strum.centerOffsets();
+		}
 
 		for (note in unspawnedNotes)
 		{
@@ -91,9 +93,16 @@ class PlayState extends MusicBeatState
 			});
 		}
 
+		updateNotes(elapsed);
+
+		if (!botplay) updateInput();
+	}
+
+	private function updateNotes(elapsed:Float):Void
+	{
 		for (note in notes)
 		{
-			if (note.type == OPPONENT && note.mustBeHit)
+			if (note.botplay && note.mustBeHit)
 			{
 				note.pressed = true;
 				note.kill();
@@ -120,6 +129,8 @@ class PlayState extends MusicBeatState
 			if (note.y + note.offset.y <= note.reference.y + note.reference.height / 2 
 				&& note.mustBeHit && note.parent.pressed)
 			{
+				if (!note.strumnote.hold) note.strumnote.hold = true;
+
 				final width = Math.max(note.width, tail.width);
 				final height = note.height + tail.height;
 				final rect:FlxRect = new FlxRect(0, center - note.y, width * 2, height * 2);
@@ -131,7 +142,7 @@ class PlayState extends MusicBeatState
 					tail.clipRect = rect;
 			}
 
-			if (note.type == OPPONENT && tail.mustBeHit)
+			if (note.botplay && tail.mustBeHit)
 			{
 				note.pressed = true;
 				note.kill();
@@ -140,7 +151,7 @@ class PlayState extends MusicBeatState
 				note.strumnote.hold = false;
 			}
 
-			if (note.parent.killed && !note.parent.pressed)
+			if (note.parent.killed && !note.parent.pressed || note.vanish)
 			{
 				note.alpha = tail.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
 
@@ -149,6 +160,7 @@ class PlayState extends MusicBeatState
 					note.kill();
 					note.destroy();
 					sustains.remove(note, true);
+					note.strumnote.hold = false;
 				}
 			}
 
@@ -158,6 +170,98 @@ class PlayState extends MusicBeatState
 				note.destroy();
 				sustains.remove(note, true);
 			}
+		}
+	}
+
+	private function updateInput():Void 
+	{
+		final left:Bool = FlxG.keys.pressed.D;
+		final down:Bool = FlxG.keys.pressed.F;
+		final up:Bool = FlxG.keys.pressed.J;
+		final right:Bool = FlxG.keys.pressed.K;
+		final presseds:Array<Bool> = [left, down, up, right];
+
+		final justLeft:Bool = FlxG.keys.justPressed.D;
+		final justDown:Bool = FlxG.keys.justPressed.F;
+		final justUp:Bool = FlxG.keys.justPressed.J;
+		final justRight:Bool = FlxG.keys.justPressed.K;
+		final justPresseds:Array<Bool> = [justLeft, justDown, justUp, justRight];
+
+		final leftR:Bool = FlxG.keys.justReleased.D;
+		final downR:Bool = FlxG.keys.justReleased.F;
+		final upR:Bool = FlxG.keys.justReleased.J;
+		final rightR:Bool = FlxG.keys.justReleased.K;
+		final releaseds:Array<Bool> = [leftR, downR, upR, rightR];
+
+		if (justPresseds.contains(true))
+		{
+			final notesDetected:Array<Note> = [];
+			var skipDetection:Bool = false;
+
+			for (note in notes)
+			{
+				if (!note.botplay && note.canBeHit && justPresseds[note.ID])
+				{
+					for (possible in notesDetected)
+					{
+						skipDetection = Math.abs(possible.position - note.position) > 0 && possible.name == note.name;
+						if (skipDetection) break;
+					}
+					if (!skipDetection) notesDetected.push(note);
+				}
+				else if (!note.botplay && !note.canBeHit) break;
+			}
+
+			if (notesDetected.length > 0)
+			{
+				for (note in notesDetected)
+				{
+					note.pressed = true;
+					note.kill();
+					note.destroy();
+					notes.remove(note, true);
+					note.strumnote.animation.play("confirmed", true);
+				}
+			}
+			else
+			{
+				for (index => input in justPresseds) 
+					if (input) playerStrum.members[index].animation.play("pressed", true);
+			}
+		}
+
+		if (presseds.contains(true) || releaseds.contains(true))
+		{
+			for (note in sustains)
+			{
+				final isPressed:Bool = !note.botplay && note.parent.pressed && presseds[note.ID];
+				final hasVanish = !note.botplay && note.pressed && releaseds[note.ID];
+
+				if (isPressed && !note.vanish)
+				{
+					note.pressed = true;
+					// increase score
+				}
+				else if (!note.botplay && note.tail.canBeHit || hasVanish)
+				{
+					note.kill();
+					note.destroy();
+					sustains.remove(note, true);
+				}
+				else if (!note.botplay) break;
+			}
+		}
+
+		for (strum in playerStrum) // just copied strumlines bucle for line lol
+		{
+			final isBot:Bool = strum.parent.botplay;
+			var animName = strum.animation.curAnim.name;
+
+			if (!isBot && animName != 'static' && releaseds[strum.ID])
+				strum.animation.play('static');
+
+			animName = strum.animation.curAnim.name; // refresh name
+			if (animName != 'confirmed') strum.centerOffsets();
 		}
 	}
 
@@ -218,6 +322,7 @@ class PlayState extends MusicBeatState
 		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, PLAYER);
 		playerStrum.ID = 1;
 		playerStrum.y = 50;
+		playerStrum.botplay = botplay;
 		strumlineManager.add(playerStrum);
 		for (note in playerStrum) strumline.add(note);
 		
@@ -254,14 +359,34 @@ class PlayState extends MusicBeatState
 		FlxG.sound.music = new FlxSound();
 		FlxG.sound.music.loadEmbedded('assets/music/songs/$level/Inst.ogg');
 
-		for (character in chartData.characters)
+		var newAdded:Int = 0;
+
+		for (index => character in chartData.characters)
 		{
-			if (!chartData.allowedVocals.get(character.name)) continue;
+			if (!chartData.allowedVocals.get(character.name)) 
+			{
+				if (index == chartData.characters.length - 1) ++newAdded;
+				continue;
+			}
+			final URL:String = 'assets/music/songs/$level/Voices-${character.name}.ogg';
+			if (!Assets.exists(URL)) continue;
+
 			final vocal:FlxSound = new FlxSound();
-			vocal.loadEmbedded('assets/music/songs/$level/Voices-${character.name}.ogg');
+			vocal.loadEmbedded(URL);
 			FlxG.sound.list.add(vocal);
 			vocals.set(character.name, vocal);
+			++newAdded;
+
 			if (character.type == PLAYER) playerVocals.set(character.name, vocal);
+		}
+
+		if (newAdded < 1)
+		{
+			final URL:String = 'assets/music/songs/$level/Voices.ogg';
+			final vocal:FlxSound = new FlxSound();
+			vocal.loadEmbedded(URL);
+			FlxG.sound.list.add(vocal);
+			vocals.set("", vocal);
 		}
 
 		final tempo = songMeta.tempo[0].data;
