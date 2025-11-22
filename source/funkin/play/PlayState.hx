@@ -12,6 +12,7 @@ import funkin.play.notes.data.NoteFile;
 import funkin.play.notes.strum.StrumLine;
 import funkin.play.notes.strum.StrumLineManager;
 import funkin.play.notes.strum.StrumNote;
+import funkin.play.ui.ComboRating;
 import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
@@ -44,6 +45,8 @@ class PlayState extends MusicBeatState
 
 	private var notesLength:Int = 4;
 
+	public var comboGrp:ComboRating = null;
+
 	public var botplay:Bool = false;
 
 	public function new(level:String, difficulty:String)
@@ -63,6 +66,10 @@ class PlayState extends MusicBeatState
 		super.create();
 
 		setupSong();
+
+		comboGrp = new ComboRating(this);
+		comboGrp.loadSkin(chartData.current.notes);
+		add(comboGrp);
 
 		spawnStrumlines();
 		generateNotes();
@@ -111,6 +118,8 @@ class PlayState extends MusicBeatState
 
 				note.strumnote.animation.play("confirmed", true);
 				note.strumnote.hold = note.length > 0;
+
+				comboGrp.noteHit(note.skin, "sick", 0);
 			}
 
 			if (note.y <= -note.height)
@@ -286,6 +295,8 @@ class PlayState extends MusicBeatState
 				curSkin = chartData.current.notes;
 			else 
 				curSkin = note.skin;
+
+			if (!comboGrp.loadedSkins.contains(curSkin)) comboGrp.loadSkin(curSkin);
 			
 			if (!storedSkins.exists(curSkin))
 			{
@@ -294,6 +305,8 @@ class PlayState extends MusicBeatState
 				storedSkins[curSkin] = skinFile;
 			}
 			else skinFile = storedSkins[curSkin];
+
+			if (note.skin == null) note.skin = curSkin;
 
 			final info = skinFile.notes[StrumLine.names[notesLength].indexOf(note.name)];
 			final spr:Note = new Note(note, skinFile, info, this, false);
