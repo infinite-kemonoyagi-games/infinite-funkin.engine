@@ -8,7 +8,7 @@ import funkin.backend.MusicBeatSprite;
 
 final class CoolUtils
 {
-    public static function loadAnimationFile(sprite:MusicBeatSprite, type:AnimationBaseFile, 
+    public static function loadAnimationFile(sprite:MusicBeatSprite, type:AnimationTypeFile, 
         file:AnimationFile, urls:Map<String, String>, scale:FlxPoint):Void
     {
         final frame:FlxGraphicAsset = urls[file.path];
@@ -45,7 +45,7 @@ final class CoolUtils
         sprite.scale.copyFrom(scale);
     }
 
-    public static function getAnimationURLS(data:AnimationBaseFile):Map<String, String>
+    public static function getAnimationURLS(data:AnimationTypeFile):Map<String, String>
     {
         final urls:Map<String, String> = [];
         for (url in data.urls)

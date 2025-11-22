@@ -1,6 +1,6 @@
 package funkin.utils;
 
-typedef AnimationBaseFile = 
+typedef AnimationTypeFile = 
 {
     var id:String;
     var urls:Array<AnimationURL>;
