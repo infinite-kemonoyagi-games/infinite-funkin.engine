@@ -14,6 +14,8 @@ class Sustain extends NoteBase
 
     public var botplay(get, never):Bool;
 
+    public var vanish:Bool = false;
+
     public function new(parent:Note)
     {
         super(parent.chart, parent.file, parent.info, parent.inEditor);

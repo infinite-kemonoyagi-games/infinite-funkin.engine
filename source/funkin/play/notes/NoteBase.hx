@@ -12,6 +12,9 @@ import funkin.utils.CoolUtils;
 
 class NoteBase extends MusicBeatSprite
 {
+	public static final hitboxFrames:Int = 10;
+	public static final safeHitbox:Float = (hitboxFrames / 60) * 1000;
+
     public var name:String = "left";
     public var position:Float = 0.0;
     public var length:Float = 0.0;
@@ -43,6 +46,7 @@ class NoteBase extends MusicBeatSprite
     public var pressed:Bool = false;
 
     public var mustBeHit(get, never):Bool;
+    public var canBeHit(get, never):Bool;
 
     public function new(chart:ChartNoteData, file:NoteFile, info:NoteData, inEditor:Bool)
     {
@@ -65,6 +69,14 @@ class NoteBase extends MusicBeatSprite
         skin = chart.skin;
         speed = chart.speed;
         speedMode = chart.speedMode;
+
+        switch name
+        {
+            case "left": ID = 0;
+            case "down": ID = 1;
+            case "up": ID = 2;
+            case "right": ID = 3;
+        }
 
         final urls:Map<String, String> = CoolUtils.getAnimationURLS(file.spriteType);
         for (anim in info.animations) 
@@ -106,4 +118,8 @@ class NoteBase extends MusicBeatSprite
     }
 
     private function get_mustBeHit():Bool return position <= state.conductor.position;
+
+    private function get_canBeHit():Bool 
+        return position > state.conductor.position - NoteBase.safeHitbox
+                && position < state.conductor.position + NoteBase.safeHitbox;
 }
