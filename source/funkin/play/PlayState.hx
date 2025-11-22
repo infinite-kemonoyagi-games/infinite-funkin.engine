@@ -311,7 +311,7 @@ class PlayState extends MusicBeatState
 
 	public function badHit(direction:Int):Void
 	{
-		increaseScore(-25.2, 0.5, true);
+		increaseScore(-25, 0.5, true);
 		playerStrum.members[direction].animation.play("pressed", true);
 	}
 
