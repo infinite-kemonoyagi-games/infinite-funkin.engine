@@ -17,6 +17,7 @@ import funkin.play.notes.strum.StrumLine;
 import funkin.play.notes.strum.StrumLineManager;
 import funkin.play.notes.strum.StrumNote;
 import funkin.play.ui.ComboRating;
+import funkin.play.ui.NoteSplash;
 import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
@@ -44,6 +45,8 @@ class PlayState extends MusicBeatState
 	public var strumlineManager:StrumLineManager;
 	public var playerStrum:StrumLine;
 	public var opponentStrum:StrumLine;
+
+	public var noteSplashes:FlxTypedGroup<NoteSplash> = null;
 
 	private var unspawnedNotes:Array<Note> = null;
 	public var notes:FlxTypedGroup<Note> = null;
@@ -310,6 +313,7 @@ class PlayState extends MusicBeatState
 		else
 		{
 			increaseScore(350);
+			note.strumnote.splash.splash();
 			++notesPrec;
 		}
 		updateAccuracy();
@@ -405,8 +409,10 @@ class PlayState extends MusicBeatState
 
 	private function spawnStrumlines():Void
 	{
+		final curSkin:String = chartData.current.strumline;
+
 		final URL:String = 'assets/data/note/';
-		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/${chartData.current.strumline}.json'));
+		var strumFile:NoteFile = cast Json.parse(Assets.getText(URL + 'strum/$curSkin.json'));
 
 		strumline = new FlxTypedGroup();
 		add(strumline);
@@ -414,19 +420,27 @@ class PlayState extends MusicBeatState
 		strumlineManager = new StrumLineManager();
 		add(strumlineManager);
 
-		opponentStrum = new StrumLine(notesLength, strumFile, chartData.current.opponent, OPPONENT);
+		opponentStrum = new StrumLine(curSkin, notesLength, strumFile, chartData.current.opponent, OPPONENT);
 		opponentStrum.ID = 0;
 		opponentStrum.y = 50;
 		strumlineManager.add(opponentStrum);
 		for (note in opponentStrum) strumline.add(note);
-		
-		playerStrum = new StrumLine(notesLength, strumFile, chartData.current.player, PLAYER);
+
+		noteSplashes = new FlxTypedGroup();
+		add(noteSplashes);
+
+		playerStrum = new StrumLine(curSkin, notesLength, strumFile, chartData.current.player, PLAYER);
 		playerStrum.ID = 1;
 		playerStrum.y = 50;
 		playerStrum.botplay = botplay;
 		strumlineManager.add(playerStrum);
-		for (note in playerStrum) strumline.add(note);
-		
+		for (note in playerStrum)
+		{
+			final splash:NoteSplash = new NoteSplash(curSkin, note.name, note);
+			noteSplashes.add(splash);
+			strumline.add(note);
+		}
+
 		for (line in strumlineManager)
 		{
 			line.screenCenter(X);

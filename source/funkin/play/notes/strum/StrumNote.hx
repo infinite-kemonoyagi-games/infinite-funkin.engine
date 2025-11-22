@@ -3,6 +3,7 @@ package funkin.play.notes.strum;
 import flixel.math.FlxPoint;
 import funkin.backend.MusicBeatSprite;
 import funkin.play.notes.data.NoteFile;
+import funkin.play.ui.NoteSplash;
 import funkin.song.data.chart.ChartNoteData.SustainAnimation;
 import funkin.utils.CoolUtils;
 
@@ -15,6 +16,8 @@ class StrumNote extends MusicBeatSprite
     public var animSustain:SustainAnimation;
 
     public var parent:StrumLine = null;
+
+    public var splash:NoteSplash = null;
 
     public function new(data:NoteData, file:NoteFile, parent:StrumLine)
     {

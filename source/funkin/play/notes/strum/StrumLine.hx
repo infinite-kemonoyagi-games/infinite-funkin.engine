@@ -13,6 +13,8 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
         4 => ["left", "down", "up", "right"]
     ];
 
+    public var skin:String = null;
+
     public var notes:Map<String, StrumNote>;
 
     public var character:String;
@@ -20,9 +22,11 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
 
     public var botplay:Bool = false;
 
-    public function new(length:Int, file:NoteFile, character:String, type:ChartCharacterType)
+    public function new(skin:String, length:Int, file:NoteFile, character:String, type:ChartCharacterType)
     {
         super();
+
+        this.skin = skin;
 
         this.character = character;
         this.type = type;
@@ -37,6 +41,7 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
         {
             final note:StrumNote = new StrumNote(file.notes[index], file, this);
             note.ID = index;
+            note.name = name;
             if (lastNote != null) note.x = lastNote.x + (lastNote.width * lastNote.scale.x);
             notes[name] = note;
             add(note);
