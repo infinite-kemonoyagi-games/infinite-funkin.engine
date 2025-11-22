@@ -27,7 +27,7 @@ class SongConvertor
     private static var resultChart:ChartData;
     private static var resultSong:SongMetaData;
 
-    private static final characters:Array<ChartCharacterType> = [player, opponent, girlfriend];
+    private static final characters:Array<ChartCharacterType> = [PLAYER, OPPONENT, GIRLFRIEND];
 
     private static var outputURL:String = "";
     private static var outputChart:String = "";
@@ -146,7 +146,7 @@ class SongConvertor
 
             switch result.type
             {
-                case player:
+                case PLAYER:
                     if (!existsPlayer)
                     {
                         Sys.println(Color.YELLOW + "You want to set this character as the current player? (Y/n) " + Color.RESET);
@@ -157,7 +157,7 @@ class SongConvertor
                             existsPlayer = true;
                         }
                     }
-                case opponent:
+                case OPPONENT:
                     if (!existsOpponent)
                     {
                         Sys.println(Color.YELLOW + "You want to set this character as the current opponent? (Y/n) " + Color.RESET);
@@ -168,7 +168,7 @@ class SongConvertor
                             existsOpponent = true;
                         }
                     }
-                case girlfriend:
+                case GIRLFRIEND:
                     if (!existsGirlfriend)
                     {
                         Sys.println(Color.YELLOW + "You want to set this character as the current girlfriend? (Y/n) " + Color.RESET);
@@ -351,18 +351,22 @@ class SongConvertor
             for (note in section.sectionNotes) 
             {
                 var character:String = resultChart.current.player;
+                var type:ChartCharacterType = PLAYER;
                 if (section.mustHitSection && note[1] > 3)
                 {
                     character = resultChart.current.opponent;
+                    type = OPPONENT;
                 }
                 else if (!section.mustHitSection && note[1] < 4)
                 { 
                     character = resultChart.current.opponent;
+                    type = OPPONENT;
                 }
 
                 resultChart.notes.push({
                     name: names[Std.int(Math.abs(note[1] % 4))],
                     character: character,
+                    type: type,
                     position: note[0],
                     length: note[2],
                     speed: null,
@@ -450,8 +454,8 @@ typedef ChartNoteSkins =
 
 enum abstract ChartNoteType(String) from String to String 
 {
-    public inline final strum = "strum";
-    public inline final note = "note";
+    public inline final STRUM = "strum";
+    public inline final NOTE = "note";
 }
 
 typedef ChartCharacter =
@@ -462,17 +466,17 @@ typedef ChartCharacter =
 
 enum abstract ChartCharacterType(String) from String
 {
-    var player = "player";
-    var opponent = "opponent";
-    var girlfriend = "girlfriend";
+    var PLAYER = "player";
+    var OPPONENT = "opponent";
+    var GIRLFRIEND = "girlfriend";
 }
-
 typedef ChartNoteData = 
 {
     var position:Float;
 
     var name:String;
     var character:String;
+    var type:ChartCharacterType;
     var length:Float;
 
     var ?sustainAnimation:Null<SustainAnimation>;
@@ -487,16 +491,16 @@ typedef ChartNoteData =
 
 enum abstract SustainAnimation(String) from String to String
 {
-    public inline final none = "none";
-    public inline final loop = "loop";
-    public inline final steps = "steps";
-    public inline final beats = "beats";
+    public inline final NONE = "none";
+    public inline final LOOP = "loop";
+    public inline final STEPS = "steps";
+    public inline final BEATS = "beats";
 }
 
 enum abstract NoteSpeedMode(String) from String to String
 {
-    public inline var constant = 'constant';
-    public inline var mult = 'mult';
+    public inline var CONSTANT = 'constant';
+    public inline var MULT = 'mult';
 }
 
 typedef ChartEventData = 
