@@ -11,5 +11,5 @@ read -p "Path of the result files (leave this blank to import files in the curre
 echo "Output: $output"
 echo ""
 
-haxe --run SongConvertor "$input"
+haxe --run SongConverter "$input"
 read -p "Press Enter to exit..."

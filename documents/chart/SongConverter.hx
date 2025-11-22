@@ -15,7 +15,7 @@ class Color
     public static inline var WHITE = "\x1b[37m";
 }
 
-class SongConvertor
+class SongConverter
 {
     private static final letters:EReg = ~/[A-Za-z]/g;
     private static final spaces:EReg = ~/\s+/g;
@@ -137,7 +137,7 @@ class SongConvertor
             Sys.println("Set the type of character (player, opponent, girlfriend): ");
             var input:String = Sys.stdin().readLine();
 
-            while (!SongConvertor.characters.contains(input))
+            while (!SongConverter.characters.contains(input))
             {
                 Sys.println(Color.RED + input + " is not valid." + Color.RESET);
                 input = Sys.stdin().readLine();

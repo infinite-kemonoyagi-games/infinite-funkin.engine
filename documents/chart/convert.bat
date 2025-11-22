@@ -2,5 +2,5 @@
 echo FNF INFIENGINE SONG CONVERTOR
 set /p input= Path of the song 
 echo Path: %input%
-haxe --run SongConvertor %input%
+haxe --run SongConverter %input%
 pause
