@@ -144,7 +144,7 @@ class PlayState extends MusicBeatState
 	{
 		for (note in notes)
 		{
-			if (note.wasTooLate && !note.missed)
+			if (note.wasTooLate && !note.missed || note.y <= -note.height)
 			{
 				if (note.length > 0) note.sustain.vanish = true;
 				note.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
@@ -304,7 +304,7 @@ class PlayState extends MusicBeatState
 			increaseScore(350, 0.45);
 			notesPrec += 0.45;
 		}
-		else if (noteDiff > NoteBase.safeHitbox * 0.3)
+		else if (noteDiff > NoteBase.safeHitbox * 0.25)
 		{
 			rating = 'good';
 			increaseScore(350, 0.75);
