@@ -32,7 +32,8 @@ class FunkinTextCharacter extends MusicBeatSprite
         super();
     }
 
-    public function setData(character:String, font:String, size:Int, row:Int = 0, lastCharacter:FunkinTextCharacter):FunkinTextCharacter
+    public function setData(character:String, font:String, size:Int, row:Int = 0, 
+        lastCharacter:FunkinTextCharacter):FunkinTextCharacter
     {
         this.character = character;
         this.font = font;
