@@ -195,7 +195,7 @@ class PlayState extends MusicBeatState
 				if (note.length > 0) note.sustain.vanish = true;
 				note.alpha = FlxMath.lerp(note.alpha, 0, elapsed * 6);
 				if (note.alpha == 0) deleteNote(note);
-				noteMiss(note);
+				if (note.type == PLAYER) noteMiss(note);
 			}
 
 			if (note.botplay && note.mustBeHit) 
@@ -355,6 +355,7 @@ class PlayState extends MusicBeatState
 					if (hasVanish && !note.tail.canBeHit)
 					{
 						increaseScore(-100.5, 0.5, true);
+						for (sound in playerVocals) sound.volume = 0;
 						boyfriend.animation.play(Character.singNotes[notesLength][note.ID] + "miss", true);
 						boyfriend.canDance = false;
 						boyfriend.holdTimer = 0;
@@ -380,6 +381,8 @@ class PlayState extends MusicBeatState
 
 	public function badHit(direction:Int):Void
 	{
+		for (sound in playerVocals) sound.volume = 0;
+
 		increaseScore(-25, 0.5, true);
 		playerStrum.members[direction].animation.play("pressed", true);
 
@@ -390,6 +393,8 @@ class PlayState extends MusicBeatState
 
 	public function goodHit(note:Note):Void
 	{
+		for (sound in playerVocals) sound.volume = 1;
+
 		++combos;
 
 		scoreTxt.scale.x = 1.08;
@@ -432,6 +437,8 @@ class PlayState extends MusicBeatState
 
 	public function noteMiss(note:Note):Void
 	{
+		for (sound in playerVocals) sound.volume = 0;
+
 		note.missed = true;
 		updateAccuracy();
 		increaseScore(-150);
