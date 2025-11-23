@@ -17,6 +17,8 @@ final class CoolUtils
 	public static final numbers:String = "1234567890";
 	public static final symbols:String = "|~#$%()*+-:;<=>@[]^_.,'!?×←↓↑→☺☹😠😡♥♡❤";
 
+    public static final characters:String = lowerCases + upperCases + numbers + symbols;
+
     public static function loadAnimationFile(sprite:MusicBeatSprite, type:AnimationTypeFile, 
         file:AnimationFile, urls:Map<String, String>, scale:FlxPoint):Void
     {
