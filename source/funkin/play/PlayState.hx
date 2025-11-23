@@ -57,6 +57,7 @@ class PlayState extends MusicBeatState
 	public var sustains:FlxTypedGroup<Sustain> = null;
 
 	public var boyfriend:Character = null;
+	public var dad:Character = null;
 
 	private var notesLength:Int = 4;
 
@@ -96,8 +97,14 @@ class PlayState extends MusicBeatState
 		boyfriend = new Character(chartData.current.player, true);
 		boyfriend.screenCenter();
 		boyfriend.x += 250;
-		boyfriend.y += 75;
+		boyfriend.y += 110;
 		add(boyfriend);
+
+		dad = new Character(chartData.current.opponent, true);
+		dad.screenCenter();
+		dad.x -= 250;
+		dad.y -= 75;
+		add(dad);
 
 		comboGrp = new ComboRating(this);
 		comboGrp.loadSkin(chartData.current.notes);
@@ -147,8 +154,9 @@ class PlayState extends MusicBeatState
 		}
 
 		updateNotes(elapsed);
-
 		updateInput(elapsed);
+
+		if (dad.holdTimer > conductor.beatCrochet * 2) dad.canDance = true;
 
 		final scoreFormat:String = FunkinStringUtils.formatDecimals(score, 1);
 		final accuracyFormat:String = FunkinStringUtils.formatDecimals(accuracy, 2);
@@ -173,6 +181,9 @@ class PlayState extends MusicBeatState
 	public override function onBeatHit(beats:Int):Void
 	{
 		if (beats % 2 == 0 && boyfriend.canDance) boyfriend.animation.play("idle", true);
+		if (beats % 2 == 0 && dad.canDance) dad.animation.play("idle", true);
+
+		if (level == "bopeebo" && beats % 8 == 7) boyfriend.animation.play("hey");
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -189,7 +200,15 @@ class PlayState extends MusicBeatState
 
 			if (note.botplay && note.mustBeHit) 
 			{
-				if (note.type == PLAYER) goodHit(note);
+				switch note.type
+				{
+					case PLAYER: goodHit(note);
+					case OPPONENT:
+						dad.animation.play(Character.singNotes[notesLength][note.ID], true);
+						dad.canDance = false;
+						dad.holdTimer = 0;
+					case GIRLFRIEND: // nothing at the moment
+				}
 				deleteNote(note, true);
 			}
 			if (note.y <= -note.height) deleteNote(note);
@@ -201,13 +220,22 @@ class PlayState extends MusicBeatState
 			final center:Float = note.reference.y + note.reference.height / 2;
 
 			final add:Float = 350 * (note.length / conductor.beatCrochet) * elapsed;
-			if (note.botplay && note.parent.pressed && note.type == PLAYER && !note.vanish)
+			if (note.botplay && note.parent.pressed && !note.vanish)
 			{
-				note.pressed = true;
-				note.scoreAdded += add;
-				increaseScore(add);
-				boyfriend.canDance = false;
-				boyfriend.holdTimer = 0;
+				switch note.type
+				{
+					case PLAYER:
+						boyfriend.canDance = false;
+						boyfriend.holdTimer = 0;
+
+						note.pressed = true;
+						note.scoreAdded += add;
+						increaseScore(add);
+					case OPPONENT:
+						dad.canDance = false;
+						dad.holdTimer = 0;
+					case GIRLFRIEND: // nothing at the moment
+				}
 			}
 
 			if (note.y + note.offset.y <= note.reference.y + note.reference.height / 2 
@@ -565,7 +593,7 @@ class PlayState extends MusicBeatState
 
 		for (index => character in chartData.characters)
 		{
-			if (!chartData.allowedVocals.get(character.name)) 
+			if (!chartData.allowedVocals.get(character.name))
 			{
 				if (index == chartData.characters.length - 1) ++newAdded;
 				continue;

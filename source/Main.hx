@@ -17,6 +17,6 @@ class Main extends Sprite
 		FlxG.fixedTimestep = false;
 		FlxSprite.defaultAntialiasing = true;
 
-		FlxG.switchState(() -> new PlayState("house", "normal"));
+		FlxG.switchState(() -> new PlayState("bopeebo", "normal"));
 	}
 }
