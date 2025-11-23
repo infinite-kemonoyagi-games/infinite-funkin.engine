@@ -30,6 +30,8 @@ import funkin.utils.MathUtils;
 import haxe.Json;
 import openfl.Assets;
 
+using StringTools;
+
 class PlayState extends MusicBeatState
 {
 	public var level:String;
@@ -71,7 +73,7 @@ class PlayState extends MusicBeatState
 	public var notesPrec:Float = 0.0;
 	public var notesCount:Int = 0;
 
-	public var botplay:Bool = false;
+	public var botplay(default, set):Bool = false;
 
 	public function new(level:String, difficulty:String)
 	{
@@ -107,7 +109,7 @@ class PlayState extends MusicBeatState
 		scoreTxt.screenCenter(X);
 		add(scoreTxt);
 
-		timeTxt = new FlxText("0:00 | 0:01"); // if misses are 0 will not show in text
+		timeTxt = new FlxText("0:00 | 0:01");
 		timeTxt.setFormat(FlxAssets.FONT_DEFAULT, 18, OUTLINE, FlxColor.BLACK);
 		timeTxt.y = 25;
 		timeTxt.screenCenter(X);
@@ -146,7 +148,7 @@ class PlayState extends MusicBeatState
 
 		updateNotes(elapsed);
 
-		if (!botplay) updateInput(elapsed);
+		updateInput(elapsed);
 
 		final scoreFormat:String = FunkinStringUtils.formatDecimals(score, 1);
 		final accuracyFormat:String = FunkinStringUtils.formatDecimals(accuracy, 2);
@@ -170,10 +172,7 @@ class PlayState extends MusicBeatState
 
 	public override function onBeatHit(beats:Int):Void
 	{
-		if (beats % 2 == 0 && boyfriend.canDance)
-		{
-			boyfriend.animation.play("idle", true);
-		}
+		if (beats % 2 == 0 && boyfriend.canDance) boyfriend.animation.play("idle", true);
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -207,6 +206,8 @@ class PlayState extends MusicBeatState
 				note.pressed = true;
 				note.scoreAdded += add;
 				increaseScore(add);
+				boyfriend.canDance = false;
+				boyfriend.holdTimer = 0;
 			}
 
 			if (note.y + note.offset.y <= note.reference.y + note.reference.height / 2 
@@ -258,6 +259,20 @@ class PlayState extends MusicBeatState
 		final rightR:Bool = FlxG.keys.justReleased.K;
 		final releaseds:Array<Bool> = [leftR, downR, upR, rightR];
 
+		if (FlxG.keys.justPressed.SEVEN) botplay = !botplay;
+
+		if (!botplay) detectNoteInput(elapsed, presseds, justPresseds, releaseds);
+
+		final animName:String = boyfriend.animation.curAnim.name.replace("miss", "");
+		final notePressed:Int = Character.singNotes[notesLength].indexOf(animName);
+
+		if (boyfriend.holdTimer > conductor.beatCrochet * 2 && (!presseds[notePressed] || botplay))
+			boyfriend.canDance = true;
+	}
+
+	private function detectNoteInput(elapsed:Float, presseds:Array<Bool>, justPresseds:Array<Bool>,
+		releaseds:Array<Bool>):Void
+	{
 		if (justPresseds.contains(true))
 		{
 			final notesDetected:Array<Note> = [];
@@ -302,11 +317,20 @@ class PlayState extends MusicBeatState
 					note.pressed = true;
 					note.scoreAdded += add;
 					increaseScore(add);
+
+					boyfriend.canDance = false;
+					boyfriend.holdTimer = 0;
 				}
 				else if (!note.botplay && note.tail.canBeHit || hasVanish)
 				{
 					deleteSustain(note);
-					if (hasVanish && !note.tail.canBeHit) increaseScore(-100.5, 0.5, true);
+					if (hasVanish && !note.tail.canBeHit)
+					{
+						increaseScore(-100.5, 0.5, true);
+						boyfriend.animation.play(Character.singNotes[notesLength][note.ID] + "miss", true);
+						boyfriend.canDance = false;
+						boyfriend.holdTimer = 0;
+					}
 					else increaseScore(note.scoreAdded - add);
 				}
 				else if (!note.botplay) break;
@@ -330,6 +354,10 @@ class PlayState extends MusicBeatState
 	{
 		increaseScore(-25, 0.5, true);
 		playerStrum.members[direction].animation.play("pressed", true);
+
+		boyfriend.animation.play(Character.singNotes[notesLength][direction] + "miss", true);
+		boyfriend.canDance = false;
+		boyfriend.holdTimer = 0;
 	}
 
 	public function goodHit(note:Note):Void
@@ -366,6 +394,10 @@ class PlayState extends MusicBeatState
 			++notesPrec;
 		}
 		updateAccuracy();
+
+		boyfriend.animation.play(Character.singNotes[notesLength][note.ID], true);
+		boyfriend.canDance = false;
+		boyfriend.holdTimer = 0;
 
 		comboGrp.noteHit(note.skin, rating, combos);
 	}
@@ -442,15 +474,17 @@ class PlayState extends MusicBeatState
 			if (!storedSkins.exists(curSkin))
 			{
 				skinFile = cast Json.parse(Assets.getText(URL + '$curSkin.json'));
-				skinFile.notes = skinFile.notes.filter(item -> StrumLine.names[notesLength].contains(item.note));
+				skinFile.notes = skinFile.notes.filter(item -> NoteBase.names[notesLength].contains(item.note));
 				storedSkins[curSkin] = skinFile;
 			}
 			else skinFile = storedSkins[curSkin];
 
 			if (note.skin == null) note.skin = curSkin;
 
-			final info = skinFile.notes[StrumLine.names[notesLength].indexOf(note.name)];
+			final info = skinFile.notes[NoteBase.names[notesLength].indexOf(note.name)];
 			final spr:Note = new Note(note, skinFile, info, this, false);
+			spr.ID = NoteBase.names[notesLength].indexOf(spr.name);
+			if (spr.length > 0) spr.sustain.ID = NoteBase.names[notesLength].indexOf(spr.name);
 			spr.globalSpeed = chartData.speed;
 			unspawnedNotes.push(spr);
 		}
@@ -504,10 +538,14 @@ class PlayState extends MusicBeatState
 		{
 			switch Math.abs(beats)
 			{
-				case 4: FlxG.sound.play('assets/sounds/play/funkin/intro3.ogg', 0.6);
-				case 3: FlxG.sound.play('assets/sounds/play/funkin/intro2.ogg', 0.6);
-				case 2: FlxG.sound.play('assets/sounds/play/funkin/intro1.ogg', 0.6);
-				case 1: FlxG.sound.play('assets/sounds/play/funkin/introGo.ogg', 0.6);
+				case 4: 
+					FlxG.sound.play('assets/sounds/play/${chartData.current.strumline}/intro3.ogg', 0.6);
+				case 3: 
+					FlxG.sound.play('assets/sounds/play/${chartData.current.strumline}/intro2.ogg', 0.6);
+				case 2: 
+					FlxG.sound.play('assets/sounds/play/${chartData.current.strumline}/intro1.ogg', 0.6);
+				case 1: 
+					FlxG.sound.play('assets/sounds/play/${chartData.current.strumline}/introGo.ogg', 0.6);
 				case 0: 
 					startSong();
 					conductor.onBeatUpdate.remove(count);
@@ -590,5 +628,11 @@ class PlayState extends MusicBeatState
 			sound.time = timeToPlayAt;
 			sound.play(false, timeToPlayAt);	
 		}
+	}
+
+	private function set_botplay(newValue:Bool):Bool 
+	{
+		for (note in strumline) if (note.parent.type == PLAYER) note.parent.botplay = newValue;
+		return botplay = newValue;
 	}
 }

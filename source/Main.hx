@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxG;
 import flixel.FlxGame;
+import flixel.FlxSprite;
 import funkin.play.PlayState;
 import openfl.display.Sprite;
 
@@ -14,6 +15,7 @@ class Main extends Sprite
 		addChild(new FlxGame());
 
 		FlxG.fixedTimestep = false;
+		FlxSprite.defaultAntialiasing = true;
 
 		FlxG.switchState(() -> new PlayState("house", "normal"));
 	}

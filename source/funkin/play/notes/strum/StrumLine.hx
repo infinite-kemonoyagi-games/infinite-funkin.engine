@@ -6,13 +6,6 @@ import funkin.song.data.chart.ChartData.ChartCharacterType;
 
 class StrumLine extends FlxTypedSpriteGroup<StrumNote>
 {
-    public static final names:Map<Int, Array<String>> =
-    [
-        2 => ["left", "right"],
-        3 => ["left", "down", "right"],
-        4 => ["left", "down", "up", "right"]
-    ];
-
     public var skin:String = null;
 
     public var notes:Map<String, StrumNote>;
@@ -32,12 +25,12 @@ class StrumLine extends FlxTypedSpriteGroup<StrumNote>
         this.type = type;
         botplay = type != PLAYER;
 
-        file.notes = file.notes.filter(item -> names[length].contains(item.note));
+        file.notes = file.notes.filter(item -> NoteBase.names[length].contains(item.note));
 
         notes = new Map();
 
         var lastNote:StrumNote = null;
-        for (index => name in names[length])
+        for (index => name in NoteBase.names[length])
         {
             final note:StrumNote = new StrumNote(file.notes[index], file, this);
             note.ID = index;

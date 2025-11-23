@@ -9,6 +9,13 @@ import openfl.Assets;
 
 class Character extends MusicBeatSprite
 {
+    public static final singNotes:Map<Int, Array<String>> =
+    [
+        2 => ["singLEFT", "singRIGHT"],
+        3 => ["singLEFT", "singDOWN", "singRIGHT"],
+        4 => ["singLEFT", "singDOWN", "singUP", "singRIGHT"]
+    ];
+
     public var name:String = null;
 
     public var isPlayer:Bool = false;
@@ -36,16 +43,12 @@ class Character extends MusicBeatSprite
             CoolUtils.loadAnimationFile(this, file.spriteType, anim, urls, new FlxPoint(file.size.x, file.size.y));
 
         animation.play("idle");
+    }
 
-        if (isPlayer)
-        {
-            animation.rename("singLEFT", "singR");
-            animation.rename("singLEFTmiss", "singRmiss");
+    public override function update(elapsed:Float):Void
+    {
+        super.update(elapsed);
 
-            animation.rename("singRIGHT", "singLEFT");
-            animation.rename("singRIGHTmiss", "singLEFTmiss");
-            animation.rename("singR", "singRIGHT");
-            animation.rename("singRmiss", "singRIGHTmiss");
-        }
+        holdTimer += elapsed * 1000;
     }
 }

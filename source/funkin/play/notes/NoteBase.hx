@@ -12,6 +12,13 @@ import funkin.utils.CoolUtils;
 
 class NoteBase extends MusicBeatSprite
 {
+    public static final names:Map<Int, Array<String>> =
+    [
+        2 => ["left", "right"],
+        3 => ["left", "down", "right"],
+        4 => ["left", "down", "up", "right"]
+    ];
+
 	public static final hitboxFrames:Int = 10;
 	public static final safeHitbox:Float = (hitboxFrames / 60) * 1000;
 
@@ -72,14 +79,6 @@ class NoteBase extends MusicBeatSprite
         skin = chart.skin;
         speed = chart.speed;
         speedMode = chart.speedMode;
-
-        switch name
-        {
-            case "left": ID = 0;
-            case "down": ID = 1;
-            case "up": ID = 2;
-            case "right": ID = 3;
-        }
 
         final urls:Map<String, String> = CoolUtils.getAnimationURLS(file.spriteType);
         for (anim in info.animations) 
