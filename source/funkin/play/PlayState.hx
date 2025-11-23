@@ -10,6 +10,7 @@ import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.util.FlxStringUtil;
 import funkin.backend.MusicBeatState;
+import funkin.play.character.Character;
 import funkin.play.notes.Note;
 import funkin.play.notes.NoteBase;
 import funkin.play.notes.Sustain;
@@ -53,6 +54,8 @@ class PlayState extends MusicBeatState
 	public var notes:FlxTypedGroup<Note> = null;
 	public var sustains:FlxTypedGroup<Sustain> = null;
 
+	public var boyfriend:Character = null;
+
 	private var notesLength:Int = 4;
 
 	public var comboGrp:ComboRating = null;
@@ -68,7 +71,7 @@ class PlayState extends MusicBeatState
 	public var notesPrec:Float = 0.0;
 	public var notesCount:Int = 0;
 
-	public var botplay:Bool = true;
+	public var botplay:Bool = false;
 
 	public function new(level:String, difficulty:String)
 	{
@@ -87,6 +90,12 @@ class PlayState extends MusicBeatState
 		super.create();
 
 		setupSong();
+
+		boyfriend = new Character(chartData.current.player, true);
+		boyfriend.screenCenter();
+		boyfriend.x += 250;
+		boyfriend.y += 75;
+		add(boyfriend);
 
 		comboGrp = new ComboRating(this);
 		comboGrp.loadSkin(chartData.current.notes);
