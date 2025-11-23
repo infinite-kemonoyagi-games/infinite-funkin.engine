@@ -318,9 +318,10 @@ class SongConverter
             return (60 / changeTempo(section)) * 1000;
         }
 
+        var sectionPosition:Float = 0.0;
+
         for (index => section in original.notes) 
         {
-            var sectionPosition = 0.0;
             if (section.lengthInSteps != null)
                 sectionPosition += (getCrochet(section) * 4) / section.lengthInSteps;
             else 
