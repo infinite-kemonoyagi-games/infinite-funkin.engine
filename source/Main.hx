@@ -3,7 +3,7 @@ package;
 import flixel.FlxG;
 import flixel.FlxGame;
 import flixel.FlxSprite;
-import funkin.play.PlayState;
+import funkin.menu.MenuState;
 import openfl.display.Sprite;
 
 class Main extends Sprite
@@ -17,6 +17,6 @@ class Main extends Sprite
 		FlxG.fixedTimestep = false;
 		FlxSprite.defaultAntialiasing = true;
 
-		FlxG.switchState(() -> new PlayState("bopeebo", "normal"));
+		FlxG.switchState(() -> new MenuState());
 	}
 }
