@@ -330,14 +330,9 @@ class SongConverter
 
         for (index => section in original.notes) 
         {
-            if (section.lengthInSteps != null)
-                sectionPosition += getCrochet(section) * (section.lengthInSteps / 4);
-            else 
-                sectionPosition += getCrochet(section) * 4;
-
             if (index < 1 || currentFocus != section.mustHitSection)
             {
-                var focused = section.mustHitSection ? true : false;
+                final focused = section.mustHitSection;
                 resultChart.events.push({
                     position: sectionPosition,
                     name: "focusCharacter",
@@ -388,6 +383,11 @@ class SongConverter
                     sustainAnimation: "steps",
                 }); 
             }
+
+            if (section.lengthInSteps != null)
+                sectionPosition += getCrochet(section) * (section.lengthInSteps / 4);
+            else 
+                sectionPosition += getCrochet(section) * 4;
         }
 
         resultChart.notes.sort((a:ChartNoteData, b:ChartNoteData) -> return Std.int(a.position - b.position));
