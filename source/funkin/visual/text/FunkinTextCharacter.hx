@@ -8,17 +8,17 @@ using StringTools;
 
 class FunkinTextCharacter extends MusicBeatSprite
 {
+    private static var forceLowercase:Map<String, Bool> = [];
+
     public var parent:Null<FunkinText> = null;
 
     public var character:String;
     public var font:String;
-    public var size:Int;
+    public var size:Float;
     public var row:Int;
     public var lastCharacter(default, null):Null<FunkinTextCharacter> = null;
-    public var lastSpaces(default, null):Float = 0.0;
-    public var lastRows(default, null):Int = 0;
-
-    private var forceLowercase:Bool = false;
+    public var lastSpaces:Float = 0.0;
+    public var lastRows:Int = 0;
 
     public var fileUrl:String;
 
@@ -32,7 +32,7 @@ class FunkinTextCharacter extends MusicBeatSprite
         super();
     }
 
-    public function setData(character:String, font:String, size:Int, row:Int = 0, 
+    public function setData(character:String, font:String, size:Float, row:Int = 0, 
         lastCharacter:FunkinTextCharacter):FunkinTextCharacter
     {
         this.character = character;
@@ -55,7 +55,7 @@ class FunkinTextCharacter extends MusicBeatSprite
     {
         if (font != null) this.font = font;
 
-        load.sparrowAtlas(fileUrl, true);
+        frames = load.sparrowAtlas(fileUrl, true);
 
         function addAnimByChar(character:String):Void
         {
@@ -72,7 +72,7 @@ class FunkinTextCharacter extends MusicBeatSprite
             else if (CoolUtils.lowerCases.contains(character))
             {
                 animation.addByPrefix(character, character.toUpperCase(), 24, true);
-                forceLowercase = true;
+                forceLowercase[this.font] = true;
             }
             else if (CoolUtils.upperCases.contains(character))
             {
@@ -84,16 +84,13 @@ class FunkinTextCharacter extends MusicBeatSprite
             }
         }
 
-        for (character in CoolUtils.characters.split("")) 
-        {
-            detectCharacter(character);
-        }
+        for (character in CoolUtils.characters.split("")) detectCharacter(character);
     }
 
     public function loadSimple(?Font:String = null):Void
     {
         if (Font != null) this.font = Font;
-        load.sparrowAtlas(fileUrl, true);
+        frames = load.sparrowAtlas(fileUrl, true);
     }
 
     public function refreshChar(?noExists:() -> Void):Void
@@ -106,29 +103,46 @@ class FunkinTextCharacter extends MusicBeatSprite
 
         animation.play(character);
         scale.set(size, size);
+        var mult:Float = 1.0;
+        if (CoolUtils.lowerCases.contains(character) && forceLowercase[font]) 
+        {
+            mult = 0.9;
+            // scale.x *= mult;
+            scale.y *= mult;
+        }
         updateHitbox();
 
         function setOffset(isNotOriginal:Bool = false):Void
         {
             var oH:Float = 0.0;
-            if (isNotOriginal)
-            {
-                oH = Std.parseFloat(originalPoints[1]) * size;
-            }
-            final rH:Float = Std.parseFloat(referencePoints[1]) * size;
+            if (isNotOriginal) oH = Std.parseFloat(originalPoints[1]) * size;
+            var rH:Float = Std.parseFloat(referencePoints[1]) * size;
+            setGraphicSize(width, Math.min(height, rH));
+            updateHitbox();
             final centerY:Float = switch character 
             {
                 case "_" | "." | ",": height - (rH - oH);
                 case "\'" | "\"": 0;
                 default: (height - (rH - oH)) / 2;
             };
-
             offset.y += centerY;
         }
-        if (referencePoints != null)
-        {
-            setOffset(originalPoints != null);
-        }
+        if (referencePoints != null) setOffset(originalPoints != null);
+    }
+
+    public function copyFrom(character:FunkinTextCharacter):FunkinTextCharacter
+    {
+        setData(character.character, character.font, character.size, character.row, character.lastCharacter);
+        frames = character.frames;
+        animation.copyFrom(character.animation);
+        return this;
+    }
+
+    public static function cloneFrom(character:FunkinTextCharacter):FunkinTextCharacter
+    {
+        final text:FunkinTextCharacter = new FunkinTextCharacter();
+        text.copyFrom(character);
+        return text;
     }
 
     public static function animCharName(?char:String):String
