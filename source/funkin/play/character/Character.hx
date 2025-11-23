@@ -14,6 +14,7 @@ class Character extends MusicBeatSprite
     public var isPlayer:Bool = false;
 
     public var holdTimer:Float = 0.0;
+    public var canDance:Bool = true;
     public var cameraOpt:FlxPoint = null;
 
     public function new(name:String, isPlayer:Bool)

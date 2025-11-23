@@ -128,10 +128,10 @@ class PlayState extends MusicBeatState
 		for (strum in strumline)
 		{
 			final isBot:Bool = strum.parent.botplay;
-			var animName = strum.animation.curAnim.name;
+			var animName = strum.animation.curAnim?.name ?? "";
 			if (isBot && !strum.hold && animName == 'confirmed' && strum.animation.finished)
 				strum.animation.play('static');
-			animName = strum.animation.curAnim.name; // refresh name
+			animName = strum.animation.curAnim?.name ?? ""; // refresh name
 
 			if (animName != 'confirmed') strum.centerOffsets();
 		}
@@ -166,6 +166,14 @@ class PlayState extends MusicBeatState
 		timeTxt.text = '${FlxStringUtil.formatTime(time / 1000)} | ${FlxStringUtil.formatTime(length / 1000)}';
 
 		timeTxt.screenCenter(X);
+	}
+
+	public override function onBeatHit(beats:Int):Void
+	{
+		if (beats % 2 == 0 && boyfriend.canDance)
+		{
+			boyfriend.animation.play("idle", true);
+		}
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -308,12 +316,12 @@ class PlayState extends MusicBeatState
 		for (strum in playerStrum) // just copied strumlines bucle for line lol
 		{
 			final isBot:Bool = strum.parent.botplay;
-			var animName = strum.animation.curAnim.name;
+			var animName = strum.animation.curAnim?.name ?? "";
 
 			if (!isBot && animName != 'static' && releaseds[strum.ID])
 				strum.animation.play('static');
 
-			animName = strum.animation.curAnim.name; // refresh name
+			animName = strum.animation.curAnim?.name ?? ""; // refresh name
 			if (animName != 'confirmed') strum.centerOffsets();
 		}
 	}

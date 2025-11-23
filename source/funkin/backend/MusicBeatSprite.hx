@@ -100,15 +100,26 @@ class MusicBeatAnimation extends FlxAnimationController
     public override function play(animName:String, force:Bool = false, reversed:Bool = false, frame:Int = 0):Void
     {
         if (framesAnimation.exists(animName))
-            _sprite.setFrames(framesAnimation[animName], true);
+        {
+            final frames:FlxFramesCollection = framesAnimation[animName];
+            if (frames != _sprite.frames) _sprite.setFrames(frames, true);
+        }
 
         super.play(animName, force, reversed, frame);
 
         if (offsets.exists(animName))
         {
-            if (offsets[animName][1]) _sprite.centerOffsets();
-            _sprite.offset.x += offsets[animName][0].x;
-            _sprite.offset.y += offsets[animName][0].y;
+            if (offsets[animName][1])
+            {
+                _sprite.centerOffsets();
+                _sprite.offset.x += offsets[animName][0].x;
+                _sprite.offset.y += offsets[animName][0].y;
+            }
+            else
+            {
+                _sprite.offset.x = offsets[animName][0].x;
+                _sprite.offset.y = offsets[animName][0].y;
+            }
         }
     }
 }
