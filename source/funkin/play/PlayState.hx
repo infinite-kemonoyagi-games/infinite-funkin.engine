@@ -489,7 +489,7 @@ class PlayState extends MusicBeatState
 			increaseScore(350, 0.45);
 			notesPrec += 0.45;
 		}
-		else if (noteDiff > NoteBase.safeHitbox * 0.25)
+		else if (noteDiff > NoteBase.safeHitbox * 0.28)
 		{
 			rating = 'good';
 			increaseScore(350, 0.75);
