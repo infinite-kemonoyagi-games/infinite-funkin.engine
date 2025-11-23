@@ -1,5 +1,6 @@
 package funkin.play;
 
+import flixel.FlxCamera;
 import flixel.FlxG;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.math.FlxMath;
@@ -7,6 +8,8 @@ import flixel.math.FlxRect;
 import flixel.sound.FlxSound;
 import flixel.system.FlxAssets;
 import flixel.text.FlxText;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
 import flixel.util.FlxStringUtil;
 import funkin.backend.MusicBeatState;
@@ -24,6 +27,7 @@ import funkin.song.Conductor;
 import funkin.song.TimeSignature;
 import funkin.song.data.SongMetaData;
 import funkin.song.data.chart.ChartData;
+import funkin.song.data.chart.ChartEventData;
 import funkin.song.data.chart.ChartParser;
 import funkin.utils.FunkinStringUtils;
 import funkin.utils.MathUtils;
@@ -52,12 +56,15 @@ class PlayState extends MusicBeatState
 
 	public var noteSplashes:FlxTypedGroup<NoteSplash> = null;
 
+	private var events:Array<ChartEventData> = null;
 	private var unspawnedNotes:Array<Note> = null;
 	public var notes:FlxTypedGroup<Note> = null;
 	public var sustains:FlxTypedGroup<Sustain> = null;
 
 	public var boyfriend:Character = null;
 	public var dad:Character = null;
+
+	private var characterList:Map<String, Character> = null;
 
 	private var notesLength:Int = 4;
 
@@ -76,6 +83,11 @@ class PlayState extends MusicBeatState
 
 	public var botplay(default, set):Bool = false;
 
+	private var tweenCamera:FlxTween = null;
+
+	public var camHUD:FlxCamera;
+	public var camGame:FlxCamera;
+
 	public function new(level:String, difficulty:String)
 	{
 		this.level = level;
@@ -90,7 +102,24 @@ class PlayState extends MusicBeatState
 
 	public override function create():Void
 	{
+		persistentUpdate = true;
+		persistentDraw = true;
+
+		characterList = [];
+
+		camGame = new FlxCamera();
+		camHUD = new FlxCamera();
+		camHUD.bgColor.alpha = 0;
+
+		FlxG.cameras.reset(camGame);
+		FlxG.cameras.add(camHUD);
+
+		@:privateAccess
+		FlxCamera._defaultCameras = [camGame];
+
 		super.create();
+
+		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 
 		setupSong();
 
@@ -98,28 +127,33 @@ class PlayState extends MusicBeatState
 		boyfriend.screenCenter();
 		boyfriend.x += 250;
 		boyfriend.y += 110;
+		characterList[chartData.current.player] = boyfriend;
 		add(boyfriend);
 
 		dad = new Character(chartData.current.opponent, true);
 		dad.screenCenter();
 		dad.x -= 250;
 		dad.y -= 75;
+		characterList[chartData.current.opponent] = dad;
 		add(dad);
 
 		comboGrp = new ComboRating(this);
 		comboGrp.loadSkin(chartData.current.notes);
+		comboGrp.cameras = [camHUD];
 		add(comboGrp);
 
 		scoreTxt = new FlxText("Score: 0.0 | Accuracy: 0.00%"); // if misses are 0 will not show in text
 		scoreTxt.setFormat(FlxAssets.FONT_DEFAULT, 24, OUTLINE, FlxColor.BLACK);
 		scoreTxt.y = FlxG.height - scoreTxt.height;
 		scoreTxt.screenCenter(X);
+		scoreTxt.cameras = [camHUD];
 		add(scoreTxt);
 
 		timeTxt = new FlxText("0:00 | 0:01");
 		timeTxt.setFormat(FlxAssets.FONT_DEFAULT, 18, OUTLINE, FlxColor.BLACK);
 		timeTxt.y = 25;
 		timeTxt.screenCenter(X);
+		timeTxt.cameras = [camHUD];
 		add(timeTxt);
 
 		spawnStrumlines();
@@ -131,6 +165,18 @@ class PlayState extends MusicBeatState
 	public override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+
+		FlxG.camera.zoom = FlxMath.lerp(FlxG.camera.zoom, 1.0, elapsed * 6);
+		camHUD.zoom = FlxMath.lerp(camHUD.zoom, 1.0, elapsed * 6);
+
+		for (event in events)
+		{
+			if (event.position - conductor.position <= 0) 
+			{
+				eventCalled(event);
+				events.remove(event);
+			}
+		}
 
 		scoreTxt.scale.x = FlxMath.lerp(scoreTxt.scale.x, 1.0, elapsed * 6);
 
@@ -184,6 +230,35 @@ class PlayState extends MusicBeatState
 		if (beats % 2 == 0 && dad.canDance) dad.animation.play("idle", true);
 
 		if (level == "bopeebo" && beats % 8 == 7) boyfriend.animation.play("hey");
+	}
+
+	public override function onSectionHit(beats:Int):Void
+	{
+		FlxG.camera.zoom = 1.02;
+		camHUD.zoom = 1.05;
+	}
+
+	public function eventCalled(event:ChartEventData):Void
+	{
+		if (event.name == "focusCharacter")
+		{
+			var target:Character = characterList[cast event.values[0]];
+
+			if (tweenCamera != null) tweenCamera.cancel();
+
+			tweenCamera = FlxTween.tween(FlxG.camera, 
+			{
+				"scroll.x": target.x - ((camera.width - target.width) / 2) + target.cameraOpt.x,
+				"scroll.y": target.y - ((camera.height - target.height) / 2) + target.cameraOpt.y,
+			}, event.length,
+			{
+				ease: Reflect.field(FlxEase, cast event.values[1]),
+				onComplete: _ ->
+				{
+					tweenCamera = null;
+				}
+			});
+		}
 	}
 
 	private function updateNotes(elapsed:Float):Void
@@ -485,8 +560,10 @@ class PlayState extends MusicBeatState
 	private function generateNotes():Void
 	{
 		notes = new FlxTypedGroup();
+		notes.cameras = [camHUD];
 		add(notes);
 		sustains = new FlxTypedGroup();
+		sustains.cameras = [camHUD];
 		add(sustains);
 
 		unspawnedNotes = [];
@@ -536,6 +613,7 @@ class PlayState extends MusicBeatState
 		add(strumline);
 
 		strumlineManager = new StrumLineManager();
+		strumlineManager.cameras = [camHUD];
 		add(strumlineManager);
 
 		opponentStrum = new StrumLine(curSkin, notesLength, strumFile, chartData.current.opponent, OPPONENT);
@@ -545,6 +623,7 @@ class PlayState extends MusicBeatState
 		for (note in opponentStrum) strumline.add(note);
 
 		noteSplashes = new FlxTypedGroup();
+		noteSplashes.cameras = [camHUD];
 		add(noteSplashes);
 
 		playerStrum = new StrumLine(curSkin, notesLength, strumFile, chartData.current.player, PLAYER);
@@ -590,6 +669,9 @@ class PlayState extends MusicBeatState
 
 	private function setupSong():Void
 	{
+		events = [];
+		for (event in chartData.events) events.push(event);
+
 		vocals = [];
 		playerVocals = [];
 
