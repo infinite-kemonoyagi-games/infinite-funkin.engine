@@ -33,8 +33,9 @@ class FunkinMemory
 
         if (graphic != null)
         {
-            #if infinite.cache
             graphic.persist = true;
+
+            #if infinite.cache
             if (permanent != null && permanent) permanentImages.push(dir);
             #end
 
