@@ -1,0 +1,133 @@
+package funkin.assets;
+
+import flixel.FlxG;
+
+class FunkinMemory
+{
+    private var permanentImages:Array<String>;
+    public  var storedImages(default, null):Map<String, Graphic>;
+
+    private var permanentAudios:Array<String>;
+    public  var storedAudios(default, null):Map<String, Sound>;
+
+    private var permanentFiles:Array<String>; // for big files (e.g. JSON, etc)
+    public  var storedFiles(default, null):Map<String, String>;
+
+    public function new()
+    {
+        storedImages = [];
+        storedAudios = [];
+        storedFiles = [];
+
+        permanentImages = [];
+        permanentAudios = [];
+        permanentFiles  = [];
+    }
+
+    public function loadImage(dir:String, ?permanent:Bool = false):Null<Graphic>
+    {
+        if (storedImages.exists(dir))
+            return storedImages.get(dir);
+
+        final graphic:Null<Graphic> = FlxG.bitmap.add(dir, true, dir);
+
+        if (graphic != null)
+        {
+            #if infinite.cache
+            graphic.persist = true;
+            if (permanent != null && permanent) permanentImages.push(dir);
+            #end
+
+            storedImages.set(dir, graphic);
+        }
+
+        return graphic;
+    }
+
+    public function getImage(dir:String):Null<Graphic>
+        return storedImages.get(dir);
+
+    public function hasImage(dir:String):Bool
+        return storedImages.exists(dir);
+
+    public function loadAudio(dir:String, ?permanent:Bool = false):Null<Sound>
+    {
+        if (storedAudios.exists(dir))
+            return storedAudios.get(dir);
+
+        final OFLAssets = openfl.utils.Assets;
+        final sound:Null<Sound> = OFLAssets.getSound(dir, #if infinite.cache permanent #else false #end);
+
+        if (sound != null)
+        {
+            #if infinite.cache
+            if (permanent != null && permanent) permanentAudios.push(dir);
+            #end
+
+            storedAudios.set(dir, sound);
+        }
+
+        return sound;
+    }
+
+    public function getAudio(dir:String):Null<Sound>
+        return storedAudios.get(dir);
+
+    public function hasAudio(dir:String):Bool
+        return storedAudios.exists(dir);
+
+    public function loadFile(dir:String, ?permanent:Bool = false):Null<String>
+    {
+        if (storedFiles.exists(dir))
+            return storedFiles.get(dir);
+
+        final OFLAssets = openfl.utils.Assets;
+        final file:Null<String> = OFLAssets.getText(dir);
+
+        if (file != null)
+        {
+            #if infinite.cache
+            if (permanent != null && permanent) permanentFiles.push(dir);
+            #end
+
+            storedFiles.set(dir, file);
+        }
+
+        return file;
+    }
+
+    public function getFile(dir:String):Null<String>
+        return storedFiles.get(dir);
+
+    public function hasFile(dir:String):Bool
+        return storedFiles.exists(dir);
+
+    @:allow(Main)
+    private function clear():Void 
+    {
+        for (key => value in storedImages)
+        {
+            if (!permanentImages.contains(key))
+            {
+                value.persist = false;
+                FlxG.bitmap.remove(value);
+                storedImages.remove(key);
+            }
+        }
+
+        for (key => value in storedAudios)
+        {
+            if (!permanentAudios.contains(key))
+            {
+                value.close();
+                storedAudios.remove(key);
+            }
+        }
+
+        for (key => _ in storedFiles)
+        {
+            if (!permanentFiles.contains(key))
+                storedFiles.remove(key);
+        }
+    }
+}
