@@ -4,9 +4,19 @@ import flixel.FlxSprite;
 import flixel.animation.FlxAnimationController;
 import flixel.graphics.frames.FlxFramesCollection;
 import flixel.math.FlxPoint;
+import funkin.assets.FunkinAssets;
+import funkin.assets.FunkinLoader;
 
 class MusicBeatSprite extends FlxSprite
 {
+    public var assets(get, never):FunkinAssets;
+    @:noCompletion
+    private function get_assets():FunkinAssets return Main.assets;
+
+    public var load(get, never):FunkinLoader;
+    @:noCompletion
+    private function get_load():FunkinLoader return assets.load;
+
     public function new()
     {
         super();

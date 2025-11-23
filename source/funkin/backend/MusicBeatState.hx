@@ -1,11 +1,21 @@
 package funkin.backend;
 
 import flixel.FlxState;
+import funkin.assets.FunkinAssets;
+import funkin.assets.FunkinLoader;
 import funkin.song.Conductor;
 
 class MusicBeatState extends FlxState
 {
     public var conductor:Null<Conductor> = null;
+
+    public var assets(get, never):FunkinAssets;
+    @:noCompletion
+    private function get_assets():FunkinAssets return Main.assets;
+
+    public var load(get, never):FunkinLoader;
+    @:noCompletion
+    private function get_load():FunkinLoader return assets.load;
 
     public function addConductor():Void
     {
