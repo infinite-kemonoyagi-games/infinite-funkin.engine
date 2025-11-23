@@ -33,6 +33,8 @@ class SongConverter
     private static var outputChart:String = "";
     private static var outputSong:String = "";
 
+    private static var renderNotesMode:String = "1";
+
     public static function main():Void
     {
         final splitter:EReg = ~/[\/]/g;
@@ -298,6 +300,12 @@ class SongConverter
 
     private static function startCharting():Void
     {
+        Sys.print(Color.YELLOW + "Notes rendered style (1: vanilla 0.2.7 | 2: psych last version) > " + Color.RESET);
+
+        var input:String = Sys.stdin().readLine();
+        if (input == "") input = "1";
+        renderNotesMode = input;
+
         var currentTempo:Float = 0.0;
         var currentFocus:Bool = false;
 
@@ -323,17 +331,18 @@ class SongConverter
         for (index => section in original.notes) 
         {
             if (section.lengthInSteps != null)
-                sectionPosition += (getCrochet(section) * 4) / section.lengthInSteps;
+                sectionPosition += getCrochet(section) * (section.lengthInSteps / 4);
             else 
-                sectionPosition += (getCrochet(section) * 4) / 4;
+                sectionPosition += getCrochet(section) * 4;
 
             if (index < 1 || currentFocus != section.mustHitSection)
             {
-                var focused = section.mustHitSection ? 0 : 1;
+                var focused = section.mustHitSection ? true : false;
                 resultChart.events.push({
                     position: sectionPosition,
                     name: "focusCharacter",
-                    values: [focused == 1 ? resultChart.current.player : resultChart.current.opponent, 0.35]
+                    values: [focused ? resultChart.current.player : resultChart.current.opponent, "quadInOut"],
+                    length: 0.65
                 });
                 currentFocus = section.mustHitSection;
             }
@@ -342,7 +351,8 @@ class SongConverter
                 resultChart.events.push({
                     position: sectionPosition,
                     name: "changeTempo",
-                    values: [section.bpm]
+                    values: [section.bpm],
+                    length: 0
                 });
             }
 
@@ -353,12 +363,12 @@ class SongConverter
             {
                 var character:String = resultChart.current.player;
                 var type:ChartCharacterType = PLAYER;
-                if (section.mustHitSection && note[1] > 3)
+                if ((section.mustHitSection || renderNotesMode == "2") && note[1] > 3)
                 {
                     character = resultChart.current.opponent;
                     type = OPPONENT;
                 }
-                else if (!section.mustHitSection && note[1] < 4)
+                else if (!section.mustHitSection && note[1] < 4 && renderNotesMode != "2")
                 { 
                     character = resultChart.current.opponent;
                     type = OPPONENT;
@@ -509,6 +519,7 @@ typedef ChartEventData =
     var position:Float;
     var name:String;
     var values:Array<Dynamic>;
+    var length:Float;
 }
 
 // ORIGINAL CODE
