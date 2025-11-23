@@ -1,21 +1,22 @@
 package funkin.visual.text;
 
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import flixel.util.FlxPool;
 
 class FunkinText extends FlxTypedSpriteGroup<FunkinTextCharacter>
 {
-    public static var templates:Map<String, FunkinTextChar> = [];
-    public static var pool(default, null):FlxPool<FunkinTextChar> = new FlxPool<FunkinTextChar>(function()
+    public static var templates:Map<String, FunkinTextCharacter> = [];
+    public static var pool(default, null):FlxPool<FunkinTextCharacter> = new FlxPool<FunkinTextCharacter>(function()
     {
-        return new FunkinTextChar();
+        return new FunkinTextCharacter();
     });
 
     public var text(default, set):String;
     public var size:Float = null;
-    public var spaceLength(default, set):Float = 1.0;
-    public var rowSize(default, set):Float = 1.0;
+    public var spaceLength:Float = 1.0;
+    public var rowSize:Float = 1.0;
 
-    public var individualAngle(default, set):Float = 0.0;
+    public var individualAngle:Float = 0.0;
 
     public function new()
     {
